@@ -1,5 +1,6 @@
 ## File References
 
+
 ```{r results='asis'}
 cat(
   "\"Snapshot\" in use is taken from ", 
@@ -9,6 +10,23 @@ cat(
   "\"Historical\" data is taken from ", 
   str_replace_all(params$mifHist, fixed("\\"), "/"),
   ".\n\n")
+
+# Scenario availability (TODO: better as table)
+for (model in models_p3_new) {
+  cat(model, " contains data for the following scenarios:\n\n ")
+  for (s in unique(data[data$model == model, "scenario"])) {
+    cat(paste0(s, "\n"))
+  }
+  cat("\n")
+}
+
+for (model in models_p2_new) {
+  cat(model, " contains data for the following scenarios:\n\n ")
+  for (s in unique(data[data$model == model, "scenario"])) {
+    cat(paste0(s, "\n"))
+  }
+  cat("\n")
+}
 ```
 
 

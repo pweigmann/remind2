@@ -1,279 +1,460 @@
-# By Model
-```{r Models}
-models <- c("REMIND-MAgPIE 3.0-4.4", "GCAM 5.3+ NGFS")
-```
-## Socio-Economics
+# By Model {-}
+# Socio-Economics
 
-### GDP
+## GDP
 
-#### GDP|MER
+### GDP|MER {-}
 
 ```{r}
 items <- c("GDP|MER")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### GDP|PPP
+### GDP|PPP {-}
 
 ```{r}
 items <- c("GDP|PPP")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-### Policy Cost
+## Policy Cost
 
-#### Policy Cost|GDP Loss
+### Policy Cost|GDP Loss {-}
 
 ```{r}
 items <- c("Policy Cost|GDP Loss")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Policy Cost|Consumption Loss
+### Policy Cost|Consumption Loss {-}
 
 ```{r}
 items <- c("Policy Cost|Consumption Loss")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-### Population
+## Population
 
 ```{r}
 items <- c("Population")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-### Carbon Price
+## Carbon Price
 
 ```{r}
 items <- c("Price|Carbon")
-for (m in models) {
-  showLinePlots_NGFS(data, items, iam = m)
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m, scales="fixed")
 }
 ```
 
-## Climate and Emissions
+# Climate and Emissions
 
-### Global Mean Temperature Change
+## Global Mean Temperature Change
 
 ```{r}
 items <- c("Temperature|Global Mean")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-### Greenhouse Gas Emissions
+## Greenhouse Gas Emissions
 
-#### Emissions|Kyoto Gases
+### Emissions|Kyoto Gases {-}
 
 ```{r}
 items <- c("Emissions|Kyoto Gases", "Emi|GHG")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### CO2 Emissions
+### Emissions|CO2 {-}
 
 ```{r}
 items <- c("Emissions|CO2", "Emi|CO2")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-##### Emissions|CO2|Energy and Industrial Processes
+#### Emissions|CO2|Energy and Industrial Processes {-}
 
 ```{r}
 items <- c("Emissions|CO2|Energy and Industrial Processes", "Emi|CO2|Energy and Industrial Processes")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-##### Emissions|CO2|AFOLU
+#### Emissions|CO2|AFOLU {-}
 
 ```{r}
 items <- c("Emissions|CO2|AFOLU", "Emi|CO2|Land-Use Change")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Emissions|CH4
+### Emissions|CH4 {-}
 
 ```{r}
 items <- c("Emissions|CH4", "Emi|CH4")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Emissions|N2O
+### Emissions|N2O {-}
 
 ```{r}
 items <- c("Emissions|N2O", "Emi|N2O")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Emissions|F-Gases
+### Emissions|F-Gases {-}
 
 ```{r}
 items <- c("Emissions|F-Gases", "Emi|F-Gases")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-### Carbon Sequestration
+## Carbon Sequestration
 
-#### Carbon Sequestration|CCS
+### Carbon Sequestration|CCS {-}
 
 ```{r}
 items <- c("Carbon Sequestration|CCS")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-##### Carbon Sequestration|CCS|Fossil
+#### Carbon Sequestration|CCS|Fossil {-}
 
 ```{r}
 items <- c("Carbon Sequestration|CCS|Fossil")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-##### Carbon Sequestration|CCS|Biomass
+#### Carbon Sequestration|CCS|Biomass {-}
 
 ```{r}
 items <- c("Carbon Sequestration|CCS|Biomass")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Carbon Sequestration|Land Use
+### Carbon Sequestration|Land Use {-}
 
 ```{r}
 items <- c("Carbon Sequestration|Land Use")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
 
-## Energy System
+# Energy System
 
-### Final Energy
-
-```{r}
-items <- c("Final Energy", "FE")
-for (m in models) {
-  showLinePlots_NGFS(data, items, iam = m)
-}
-```
-
-#### Final Energy|Industry
-
-```{r}
-items <- c("Final Energy|Industry", "FE|Industry")
-for (m in models) {
-  showLinePlots_NGFS(data, items, iam = m)
-}
-```
-
-#### Final Energy|Transportation
-
-```{r}
-items <- c("Final Energy|Transportation", "FE|Transport")
-for (m in models) {
-  showLinePlots_NGFS(data, items, iam = m)
-}
-```
-
-#### Final Energy|Residential and Commercial
-
-```{r}
-items <- c("Final Energy|Residential and Commercial", "FE|Buildings")
-for (m in models) {
-  showLinePlots_NGFS(data, items, iam = m)
-}
-```
-
-### Primary Energy
+## Primary Energy
 
 ```{r}
 items <- c("Primary Energy", "PE")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Primary Energy|Oil
+### Primary Energy|Oil {-}
 
 ```{r}
 items <- c("Primary Energy|Oil", "PE|Oil")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Primary Energy|Coal
+### Primary Energy|Coal {-}
 
 ```{r}
 items <- c("Primary Energy|Coal", "PE|Coal")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Primary Energy|Gas
+### Primary Energy|Gas {-}
 
 ```{r}
 items <- c("Primary Energy|Gas", "PE|Gas")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Primary Energy|Nuclear
+### Primary Energy|Nuclear {-}
 
 ```{r}
 items <- c("Primary Energy|Nuclear", "PE|Nuclear")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Primary Energy|Biomass
+### Primary Energy|Biomass {-}
 
 ```{r}
 items <- c("Primary Energy|Biomass", "PE|Biomass")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
 
-#### Primary Energy|Non-Biomass Renewables
+### Primary Energy|Non-Biomass Renewables {-}
 
 ```{r}
 items <- c("Primary Energy|Non-Biomass Renewables", "PE|Non-Biomass Renewables")
-for (m in models) {
+for (m in models_p3_new) {
   showLinePlots_NGFS(data, items, iam = m)
 }
 ```
+
+#### Primary Energy|Non-Biomass Renewables|Solar {-}
+
+```{r}
+items <- c("Primary Energy|Non-Biomass Renewables|Solar", "PE|Solar")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Primary Energy|Non-Biomass Renewables|Wind {-}
+
+```{r}
+items <- c("Primary Energy|Non-Biomass Renewables|Wind", "PE|Wind")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+
+## Secondary Energy
+```{r}
+items <- c("Secondary Energy")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Secondary Energy|Electricity
+```{r}
+items <- c("Secondary Energy|Electricity", "SE|Electricity")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Coal|w/ CCS {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Coal|w/ CCS", "SE|Electricity|Coal|w/ CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Coal|w/o CCS {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Coal|w/o CCS", "SE|Electricity|Coal|w/o CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Gas|w/ CCS {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Gas|w/ CCS", "SE|Electricity|Gas|w/ CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Gas|w/o CCS {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Gas|w/o CCS", "SE|Electricity|Gas|w/o CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Oil|w/o CCS {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Oil|w/o CCS", "SE|Electricity|Oil|w/o CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Biomass|w/ CCS {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Biomass|w/ CCS", "SE|Electricity|Biomass|w/ CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity| {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Biomass|w/o CCS", "SE|Electricity|Biomass|w/o CCS")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Nuclear {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Nuclear", "SE|Electricity|Nuclear")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Solar {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Solar", "SE|Electricity|Solar")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+#### Secondary Energy|Electricity|Wind {-}
+```{r}
+items <- c("Secondary Energy|Electricity|Wind", "SE|Electricity|Wind")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+
+## Capacity Additions
+
+### Capacity Additions|Electricity|Coal {-}
+
+```{r}
+items <- c("Capacity Additions|Electricity|Coal")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Capacity Additions|Electricity|Solar|PV {-}
+
+```{r}
+items <- c("Capacity Additions|Electricity|Solar|PV")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+## Final Energy
+
+```{r}
+items <- c("Final Energy", "FE")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Industry {-}
+
+```{r}
+items <- c("Final Energy|Industry", "FE|Industry")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Transportation {-}
+
+```{r}
+items <- c("Final Energy|Transportation", "FE|Transport")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Residential and Commercial {-}
+
+```{r}
+items <- c("Final Energy|Residential and Commercial", "FE|Buildings")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Electricity {-}
+
+```{r}
+items <- c("Final Energy|Electricity", "FE|Electricity")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Gases {-}
+
+```{r}
+items <- c("Final Energy|Gases", "FE|Gases")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Hydrogen {-}
+
+```{r}
+items <- c("Final Energy|Hydrogen", "FE|Hydrogen")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Liquids {-}
+
+```{r}
+items <- c("Final Energy|Liquids", "FE|Liquids")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+### Final Energy|Solids {-}
+
+```{r}
+items <- c("Final Energy|Solids", "FE|Solids")
+for (m in models_p3_new) {
+  showLinePlots_NGFS(data, items, iam = m)
+}
+```
+
+
+

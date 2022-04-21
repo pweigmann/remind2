@@ -125,41 +125,40 @@ if (!is.null(params$cfgDefault)) {
 
 
 ```{r read scenario mifs}
+# decide which models should be part of the comparison
+models_p2 <- c("GCAM5.3_NGFS", "MESSAGEix-GLOBIOM 1.1", "REMIND-MAgPIE 2.1-4.2")
+models_p3 <- c("GCAM 5.3+ NGFS", "MESSAGEix-GLOBIOM 1.1-M-R12", "REMIND-MAgPIE 3.0-4.4")
+
 
 # Read NGFS snapshot and transform into quitte (TODO: should be given as one argument to function)
-
 snapshot_regi <- paste0(params$snapshot, "/output/snapshot_all_regions.csv")
 snapshot_p2 <- "C:/Users/pascalwe/Data/NGFS/phase2/1624888306124-NGFS_Scenario_Data_IAM_outputs_V2.2.csv"
-#"C://Users/pascalwe/data/NGFS/phase3/1648719942696-snapshot_ngfs_internal/output/snapshot_all_regions.csv"
-# snapshot_glo  <- "C://Users/pascalwe/data/NGFS/phase3/1648719942696-snapshot_ngfs_internal/output/snapshot_world.csv"
 
-tmp <- vroom(snapshot_regi)
 # inserted from Jeromes script
-data_ngfs <- tmp[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c(1995:2019, seq(2020,2100,5))))] %>% 
-    rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>% 
-    pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>% 
-    mutate(period = as.numeric(period))
+tmp <- vroom(snapshot_regi)
+data_p3 <- tmp[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c(1995:2019, seq(2020,2100,5))))] %>%
+  rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+  pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>%
+  mutate(period = as.numeric(period)) %>%
+  filter(model == models_p3)
 
 tmp_p2 <- vroom(snapshot_p2)
-data_ngfs_p2 <- tmp_p2[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c(1990, 1995, 2000:2019, seq(2020,2100,5))))] %>% 
-    #filter(Model != "Reference") %>% 
-    rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>% 
-    pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>% 
-    mutate(period = as.numeric(period))
+data_p2 <- tmp_p2[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c(1990, 1995, 2000:2019, seq(2020,2100,5))))] %>%
+  rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+  pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>%
+  mutate(period = as.numeric(period)) %>%
+  filter(model == models_p2)
 
+rm(tmp, tmp_p2)
 
-# Retrieve data for reference table to be shown at the beginning of the document.
-# TODO: Adapt to NGFS
-# data_ngfs %>%
-#   select(fileid, path, scenario, newScenarioName) ->
-#   fileReference
+# rename models
+models_p2_new <- c("GCAM_Ph2", "MSGE_Ph2", "RMND_Ph2")
+models_p3_new <- c("GCAM_Ph3", "MSGE_Ph3", "RMND_Ph3")
 
-# Apply renaming of scenario, unnest, and select only relevant columns.
-# dataScenNested %>%
-#   mutate(scenario = factor(newScenarioName, levels = newScenarioName)) %>%
-#   unnest(data) %>%
-#   select(model, scenario, region, variable, unit, period, value) ->
-#   dataScen
+for (m in 1:3) {
+  data_p2[data_p2$model == models_p2[m], "model"]    <- models_p2_new[m]
+  data_p3[data_p3$model == models_p3[m], "model"]    <- models_p3_new[m]
+}
 ```
 
 ```{r define scenario colors}
@@ -178,35 +177,45 @@ data_ngfs_p2 <- tmp_p2[, c("Model", "Scenario", "Region", "Variable", "Unit", pa
 ```{r read historical mif}
 params$mifHist %>%
   read.quitte(factors = TRUE) ->
-  dataHist
+  data_hist
 ```
 
 ```{r preprocess}
 # Filter years and NA.
-data_ngfs %>%
+data_p3 %>%
   filter(period %in% params$yearsScen, !is.na(value)) ->
-  data_ngfs
+  data_p3
 
-data_ngfs_p2 %>%
+data_p2 %>%
   filter(period %in% params$yearsScen, !is.na(value)) ->
-  data_ngfs_p2
+  data_p2
 
-dataHist %>%
+data_hist %>%
   filter(period %in% params$yearsHist, !is.na(value)) ->
-  dataHist
+  data_hist
 
 # quick region harmonization
 # same from start: IND, JPN, US?, CHN?, EU?, R5/10? 
 # -> historical data need harmonization from REMIND style to NGFS style
-levels(dataHist$region) <- c(levels(dataHist$region), "EU", "CHN", "RUS")
-dataHist[dataHist$region == "EUR", "region"] <- "EU"   # not perfect match
-dataHist[dataHist$region == "CHA", "region"] <- "CHN"  # not perfect match
-dataHist[dataHist$region == "REF", "region"] <- "RUS"  # not perfect match at all
+levels(data_hist$region) <- c(levels(data_hist$region), "EU", "CHN", "RUS")
+data_hist[data_hist$region == "EUR", "region"] <- "EU"   # not perfect match
+data_hist[data_hist$region == "CHA", "region"] <- "CHN"  # not perfect match
+data_hist[data_hist$region == "REF", "region"] <- "RUS"  # not perfect match at all
+
+# harmonize scenario names with phase 2 data
+data_p2[grep("Below 2", data_p2$scenario),"scenario"]  <- "o_2c"
+data_p2[data_p2$scenario == "Net Zero 2050", "scenario"]    <- "o_1p5c"
+data_p2[data_p2$scenario == "Current Policies", "scenario"] <- "h_cpol"
+data_p2[data_p2$scenario == "Nationally Determined Contributions (NDCs)", "scenario"] <- "h_ndc"
+data_p2[data_p2$scenario == "Delayed transition", "scenario"] <- "d_delfrag"
+data_p2[data_p2$scenario == "Divergent Net Zero", "scenario"] <- "d_rap"
+
+
 
 # Combine into one data frame and remove old.
-data_ngfs <- bind_rows(data_ngfs, data_ngfs_p2)
-data <- bind_rows(data_ngfs, dataHist)
-rm(data_ngfs, data_ngfs_p2, dataHist)
+data_p3 <- bind_rows(data_p3, data_p2)
+data <- bind_rows(data_p3, data_hist)
+rm(data_p3, data_p2, data_hist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>%
@@ -222,8 +231,15 @@ if (!is.null(params$reg)) {
     data
 }
 
-# GDP available in $2005 and $2010 in REMIND, remove 2005 (also removes historical data!)
+# GDP available in $2005 and $2010 in REMIND, remove 2005 (also might remove historical data!)
 data <- filter(data, !(variable == "GDP|PPP" & unit == "billion US$2005/yr"))
+
+# sort scenarios in a more logical order
+data$scenario <- factor(as.character(data$scenario),
+                        levels=c("h_cpol", "h_ndc", "o_1p5c", "o_2c", "d_delfrag", "d_rap", "historical"))
+
+
+# more data processing? Removing some projections, like Innopath data?
 ```
 
 
@@ -232,14 +248,14 @@ data <- filter(data, !(variable == "GDP|PPP" & unit == "billion US$2005/yr"))
 
 # Change unit million US$2005/yr to billion US$2005/yr.
 # Relevant for ARIADNE historical EUR GDP|PPP.
-# bind_rows(
-#   data %>% filter(!unit %in% c("million US$2005/yr")),
-#   data %>%
-#     filter(unit == "million US$2005/yr") %>%
-#     mutate(
-#       unit = "billion US$2005/yr",
-#       value = value / 1000)) ->
-#   data
+bind_rows(
+  data %>% filter(!unit %in% c("million US$2005/yr")),
+  data %>%
+    filter(unit == "million US$2005/yr") %>%
+    mutate(
+      unit = "billion US$2005/yr",
+      value = value / 1000)) ->
+  data
 ```
 
 
