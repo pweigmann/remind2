@@ -1,0 +1,165 @@
+# IEA Net-Zero Comparison {-}
+
+# Socio-Economics
+
+## GDP
+```{r}
+plot_default(ivar="GDP|MER", ititle="GDP|MER in 2050 [EJ/yr]")
+plot_default(ivar="GDP|PPP", ititle="GDP|PPP in 2050 [EJ/yr]", irange=c(200000, 300000))
+```
+
+## Population
+```{r}
+plot_default(ivar="Population", ititle="Population in 2050 [EJ/yr]", irange=c(9000, 9500))
+```
+
+
+## Carbon Price
+```{r}
+plot_default(ivar="Price|Carbon", ititle="Carbon Price in 2050 [EJ/yr]", irange=c(0, 2000))
+```
+
+
+# Climate and Emissions
+
+## Greenhouse Gas Emissions
+
+### Emissions|Kyoto Gases {-}
+
+```{r}
+plot_default(ivar="Emissions|Kyoto Gases", ititle="Emissions of Kyoto Gases in 2050 [EJ/yr]", irange = c(0, 18000))
+```
+
+### Emissions|CO2 {-}
+
+```{r}
+plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2050 [EJ/yr]", irange = c(-3000, 9000))
+```
+
+## Carbon Sequestration
+```{r}
+plot_default(ivar="Carbon Sequestration|CCS", ititle="CCS in 2050 [GtCO2/yr]", ifac=1e-3)
+```
+
+### Afforestation & BECCS
+```{r}
+# Use of carbon dioxide removal technologies: CO2 emissions captured and stored from bioenergy with
+# CCUS (BECCS) and direct air capture in the IPCC scenarios range from 3.5 Gt CO2 to 16 Gt CO2 in 2050,
+# compared with 1.9 Gt CO2 in the NZE Scenario.
+tmp_sr15 <- data_sr15 %>%
+  filter(period == 2050,
+         variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation"),
+         category %in% c("Below 1.5Â°C", "1.5C low overshoot")) %>%
+  mutate(value = value*1e-3) %>%
+  group_by(model, scenario, region, period) %>%
+  summarise(value = sum(value, na.rm=TRUE)) %>%
+  ungroup() %>%
+  mutate(source = "1 IPCC SR1.5")
+tmp_iea <- data.frame(model="IEA WEO 2021 Net2050", scenario = "NZE2050", source="2 IEA", period=2050, value=1.9, region="World", stringsAsFactors = FALSE)
+tmp_ngfs <- data_ngfs_world %>%
+  filter(period == 2050,
+         scenario %in% u_ngfs_scenario,
+         variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation")) %>%
+  mutate(value = value*1e-3) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  group_by(model, scenario, region, period) %>%
+  summarise(value = sum(value, na.rm=TRUE)) %>%
+  ungroup() %>%
+  mutate(source = "3 NGFS")
+
+tmp_ar6 <- data_ar6 %>%
+  filter(period == 2050,
+         variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation"),
+         category %in% c("C1")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(source = "2 IPCC AR6") %>%
+  mutate(value = (`Carbon Sequestration|CCS|Biomass` + `Carbon Sequestration|Land Use|Afforestation`)*1e-3)
+tmp_ar6 <- tmp_ar6 %>% filter(!is.na(value))
+
+tmp_title <- "Carbon dioxide removal (Afforestation & BECCS) \nin 2050 [GtCO2/yr]"
+
+p7 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
+plot(p7)
+```
+
+
+# Energy
+
+## Primary Energy
+
+### Total Fossil
+```{r}
+plot_default(ivar="Primary Energy|Fossil", ititle="Total Fossils Use in 2050 [EJ/yr]")
+```
+
+### Coal {-}
+```{r}
+plot_default(ivar="Primary Energy|Coal", ititle="Coal Use in 2050 [EJ/yr]")
+```
+
+### Oil {-}
+```{r}
+plot_default(ivar="Primary Energy|Oil", ititle="Oil Use in 2050 [EJ/yr]")
+```
+
+### Gas {-}
+```{r}
+plot_default(ivar="Primary Energy|Gas", ititle="Gas Use in 2050 [EJ/yr]")
+```
+
+### Biomass {-}
+```{r}
+plot_default(ivar="Primary Energy|Biomass", ititle="Primary Bioenergy in 2050 [EJ/yr]", irange=c(50, 200))
+```
+
+
+## Final Energy
+```{r}
+plot_default(ivar="Final Energy",ititle="Final Energy Use in 2050 [EJ/yr]",irange=c(250,500))
+plot_default(ivar="Final Energy|Hydrogen",ititle="Hydrogen Use in 2050 [EJ/yr]")
+```
+
+## Electricity Shares Solar/Wind
+```{r}
+#== PLOT DATA ========================================================
+tmp_sr15 <- data_sr15 %>%
+  filter(period == 2050,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
+         category %in% c("Below 1.5Â°C", "1.5C low overshoot")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)# IEA data taken from NZE2021_Annex.xlsb > World_Elec > (Solar PV + Wind Ã¼ CSP) / Total generation  * 100
+tmp_ar6 <- data_ar6 %>%
+  filter(period == 2050,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
+         category %in% c("C1")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)# IEA data taken from NZE2021_Annex.xlsb > World_Elec > (Solar PV + Wind Ã¼ CSP) / Total generation  * 100
+tmp_ar6 <- tmp_ar6 %>% filter(!is.na(value))
+
+tmp_iea <- data_iea_nz %>%
+  filter(period == 2050,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)
+
+tmp_ngfs <- data_ngfs_world %>%
+  filter(period == 2050,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
+         scenario %in% u_ngfs_scenario) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)
+tmp_title <- "Shares of wind and solar in electricity generation in 2050 [%]"
+
+p1 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
+print(p1)
+```

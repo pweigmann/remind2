@@ -523,6 +523,180 @@ showLinePlots_NGFS <- function(
   #p2 <- ggplotly(p2)
   grid.arrange(p1, p2, nrow = 1)
   cat("\n\n")
-
   return(invisible(NULL))
+}
+
+# IEA Net-Zero Comparison Plots
+# plots sr15 and ar6 data as boxplots, and IEA and NGFS data as points on top
+plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i_data_ar6,
+                                          i_title, yrange=NULL) {
+
+  tmp_sr15_stats <- i_data_sr15 %>%
+    group_by(period) %>%
+    summarise(min=min(value),
+              p25=quantile(value, 0.25),
+              med=median(value),
+              p75=quantile(value, 0.75),
+              max=max(value)) %>%
+    ungroup() %>%
+    mutate(source = "1 IPCC SR1.5")
+
+  tmp_ar6_stats <- i_data_ar6 %>%
+    group_by(period) %>%
+    summarise(min=min(value),
+              p25=quantile(value, 0.25),
+              med=median(value),
+              p75=quantile(value, 0.75),
+              max=max(value)) %>%
+    ungroup() %>%
+    mutate(source = "2 IPCC AR6")
+
+  p <- ggplot(i_data_sr15 %>% mutate(source = "1 IPCC SR1.5")) +
+    #geom_boxplot(aes(x=period, y=value), col="#999999", fill="#66666633") +
+    geom_rect(aes(xmin=period-0.8, xmax=period-0.2, ymin=p25, ymax=p75),
+              data = tmp_sr15_stats,
+              col="#999999", fill="#66666633") +
+    geom_segment(aes(x=period-0.8, xend=period-0.2, y=med, yend=med),
+                 data = tmp_sr15_stats,
+                 size=2,
+                 col="#999999")+
+    geom_rect(aes(xmin=period+0.2, xmax=period+0.8, ymin=p25, ymax=p75),
+              data = tmp_ar6_stats,
+              col="#ffa089", fill="#ffcba4") +
+    geom_segment(aes(x=period+0.2, xend=period+0.8, y=med, yend=med),
+                 data = tmp_ar6_stats,
+                 size=2,
+                 col="#ffa089")
+  # geom_segment(aes(x=period, xend=period, y=min, yend=p25),
+  #              data = tmp_sr15_stats,
+  #              col="#999999") +
+  # geom_boxplot(aes(x=period, ymin=min, lower=p25, middle=med, upper=p75, ymax=max),
+  #              data=tmp_sr15_stats,
+  #              stat = "identity",
+  #              col="#999999", fill="#66666633") +
+  #geom_jitter(aes(x=period, y=value), col="#333333", pch=20, size=0.5) +
+  #geom_point(aes(x=source, y=value), data=tmp_iea, col="black",fill="yellow",  pch=22, size=3) +
+
+  if (!is.null(yrange)) {
+    p <- p +
+      geom_segment(aes(x=period-0.5, xend=period-0.5, y=yrange[1], yend=p25),
+                   data = tmp_sr15_stats,
+                   col="#999999") +
+      geom_segment(aes(x=period-0.5, xend=period-0.5, y=p75, yend=yrange[2]),
+                   data = tmp_sr15_stats,
+                   col="#999999") +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=yrange[1], yend=p25),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=yrange[2]),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      scale_y_continuous(expand=c(0,0)) +
+      coord_cartesian(ylim = yrange, clip = "off")
+    #label showing min and max at the end of the scales
+    p <- p +
+      geom_point(aes(x=xpos, y=ypos),
+                 data = data.frame(xpos = unique(tmp_sr15_stats$period)-0.7, ypos = yrange[1] + (yrange[2]-yrange[1])*0.03),
+                 pch=25,                  size=3,                  col="#999999") +
+      geom_text(aes(x=xpos, y=ypos, label=text),
+                data = data.frame(xpos = unique(tmp_sr15_stats$period)-0.7, ypos = yrange[1] + (yrange[2]-yrange[1])*0.07, text = paste0("Min: ", round(tmp_sr15_stats$min, digits = 0))),
+                size=5,                 col="#999999")
+
+    p <- p +
+      geom_point(aes(x=xpos, y=ypos),
+                 data = data.frame(xpos = unique(tmp_sr15_stats$period)-0.7, ypos = yrange[2] - (yrange[2]-yrange[1])*0.03),
+                 pch=24,                  size=3,                  col="#999999") +
+      geom_text(aes(x=xpos, y=ypos, label=text),
+                data = data.frame(xpos = unique(tmp_sr15_stats$period)-0.7, ypos = yrange[2] - (yrange[2]-yrange[1])*0.07, text = paste0("Max: ", round(tmp_sr15_stats$max, digits = 0))),
+                size=5,                 col="#999999")
+    p <- p +
+      geom_point(aes(x=xpos, y=ypos),
+                 data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[1] + (yrange[2]-yrange[1])*0.03),
+                 pch=25,                  size=3,                  col="#ffa089") +
+      geom_text(aes(x=xpos, y=ypos, label=text),
+                data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[1] + (yrange[2]-yrange[1])*0.07, text = paste0("Min: ", round(tmp_ar6_stats$min, digits = 0))),
+                size=5,                 col="#ffa089")
+
+    p <- p +
+      geom_point(aes(x=xpos, y=ypos),
+                 data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[2] - (yrange[2]-yrange[1])*0.03),
+                 pch=24,                  size=3,                  col="#ffa089") +
+      geom_text(aes(x=xpos, y=ypos, label=text),
+                data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[2] - (yrange[2]-yrange[1])*0.07, text = paste0("Max: ", round(tmp_ar6_stats$max, digits = 0))),
+                size=5,                 col="#ffa089")
+  } else {
+    p <- p +
+      geom_segment(aes(x=period-0.5, xend=period-0.5, y=min, yend=p25),
+                   data = tmp_sr15_stats,
+                   col="#999999") +
+      geom_segment(aes(x=period-0.5, xend=period-0.5, y=p75, yend=max),
+                   data = tmp_sr15_stats,
+                   col="#999999") +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=min, yend=p25),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=max),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      scale_y_continuous(expand=c(0,0)) +
+      coord_cartesian(clip = "off")
+  }
+
+  p <- p +
+    geom_point(aes(x=period, y=value, shape=scenario, color=model, bg=model), data=i_data_iea, size=14) +
+    geom_point(aes(x=period, y=value, shape=scenario, color=model, bg=model), data=i_data_ngfs %>% mutate(source = "3 NGFS"), size=9) +
+    theme_bw() +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          plot.title = element_text(size=26),
+          axis.text.y = element_text(size=26),
+          legend.position = "bottom",
+          legend.title = element_text(size=16),
+          legend.text = element_text(size=16)) +
+    scale_colour_manual(name="Model & Scenario",
+                        breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
+                        #labels = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
+                        labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050"),
+                        values = c("GCAM"="#e41a1c", "MESSAGEix-GLOBIOM"="#377eb8", "REMIND-MAgPIE"="#4daf4a", "IEA WEO 2021 Net2050"="#000000")) +
+    scale_fill_manual(name="Model & Scenario",
+                      breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
+                      #labels = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
+                      labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050"),
+                      values = c("GCAM"="#e41a1cff", "MESSAGEix-GLOBIOM"="#377eb8ff", "REMIND-MAgPIE"="#4daf4aff", "IEA WEO 2021 Net2050"="#ffff33")) +
+    scale_shape_manual(name="Scenario",
+                       labels = c("NZE2050", "Net Zero 2050"),
+                       breaks = c("NZE2050", "Net Zero 2050"),
+                       values = c("NZE2050"=22, "Net Zero 2050"=21)) +
+    scale_x_discrete(name="", breaks=c("1 IPCC SR1.5", "2 IEA", "3 NGFS"), labels=c("IPCC SR1.5", "IEA", "NGFS")) +
+    xlab("") + ylab("") + ggtitle(i_title) +
+    guides(
+      colour=guide_legend(ncol=2, override.aes = list(fill = c("#e41a1c", "#377eb8", "#4daf4a", "#ffff99"), shape=c(21,21,21,22))),
+      fill=guide_legend(ncol=2),
+      shape=FALSE)
+  return(p)
+}
+
+# wrapper function so only providing variable, and title and filename is enough to call function above and print files
+plot_default <- function(ivar,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1){
+  tmp_sr15 <- data_sr15 %>%
+    filter(period == iper,
+           variable == ivar,
+           category %in% c("Below 1.5Â°C", "1.5C low overshoot")) %>%
+    mutate(source = "1 IPCC SR1.5",value = value*ifac)
+  tmp_ar6 <- data_ar6 %>%
+    filter(period == iper,
+           variable == ivar,
+           category %in% c("C1")) %>%
+    mutate(source = "2 IPCC AR6",value = value*ifac)
+  tmp_iea <- data_iea_nz %>% filter(period==iper,variable==ivar) %>% mutate(value = value*ifac)
+  tmp_ngfs <- data_ngfs_world %>%
+    filter(period == iper,
+           scenario %in% u_ngfs_scenario,
+           variable == ivar) %>%
+    mutate(source = "3 NGFS",value = value*ifac)
+  tmp_title <- ititle
+  irange <- irange
+  p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title,irange)
+  return(p)
 }

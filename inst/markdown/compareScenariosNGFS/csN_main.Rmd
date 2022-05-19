@@ -140,14 +140,14 @@ data_p3 <- tmp[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c(19
   rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
   pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>%
   mutate(period = as.numeric(period)) %>%
-  filter(model == models_p3)
+  filter(model %in% models_p3)
 
 tmp_p2 <- vroom(snapshot_p2)
 data_p2 <- tmp_p2[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c(1990, 1995, 2000:2019, seq(2020,2100,5))))] %>%
   rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
   pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>%
   mutate(period = as.numeric(period)) %>%
-  filter(model == models_p2)
+  filter(model %in% models_p2)
 
 rm(tmp, tmp_p2)
 
@@ -233,6 +233,8 @@ if (!is.null(params$reg)) {
 
 # GDP available in $2005 and $2010 in REMIND, remove 2005 (also might remove historical data!)
 data <- filter(data, !(variable == "GDP|PPP" & unit == "billion US$2005/yr"))
+# remove EDGE-scenarios
+data <- data[grep("EDGE", data$model, invert=T), ]
 
 # sort scenarios in a more logical order
 data$scenario <- factor(as.character(data$scenario),
@@ -267,6 +269,40 @@ histRefModel <- c(
   "GDP|PPP pCap" = "James_IMF")
 ```
 
+```{r prepare IEA net-zero data}
+# prepare IEA Data in case it is needed
+if (5 %in% params$sections) {
+  u_ngfs_scenario <- c("Net Zero 2050")
+  
+  # TODO phase 3 data, in this current form still produces errors (object 'Secondary Energy|Electricity|Wind' not found)
+  # use "world" file from snapshot, do data preparation as Jerome did
+#   snapshot_world <- paste0(params$snapshot, "/output/snapshot_world.csv")
+#   data_p3 <- read.csv(snapshot_world) %>%
+#     rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+#     pivot_longer(names_to = "period", values_to = "value", cols = c(-"model", -"scenario", -"region", -"variable", -"unit")) %>%
+#     mutate(period = as.numeric(substr(period,start = 2,stop = 5))) %>%
+#     filter(!is.na(value))
+# 
+#   data_ngfs_world <- data_p3 %>% filter(region=="World", period %in% seq(2005,2100,5))
+#   data_ngfs_world$model <- as.character(data_ngfs_world$model)
+# 
+# data_ngfs_world <- data_ngfs_world %>%
+#   filter(!grepl("*IntegratedPhysicalDamages", model)) %>%
+#   mutate(model = ifelse(grepl("GCAM", model),      "GCAM", model)) %>%
+#   mutate(model = ifelse(grepl("MESSAGE", model),   "MESSAGEix-GLOBIOM", model)) %>%
+#   mutate(model = ifelse(grepl("REMIND", model),    "REMIND-MAgPIE", model))
+  
+  
+  # TODO: this could be replaced with new data/generic phase 2 data 
+  load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/ngfs_data_world_v2p2.RData")
+  # Load SR 15, AR6 data
+  load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/IPCC_data_sr15_ar6.RData")
+  #reduce size...
+  data_ar6 <- data_ar6 %>% filter(region=="World", period %in% seq(2005,2100,5))
+  data_iea_nz <- read.quitte("C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/historical_IEA_nz2050.csv")
+  data_iea_nz$scenario <- "NZE2050"
+}
+```
 
 ```{r calcuate pCap variables}
 # For all variables in following table, add a new variable to data with the name
