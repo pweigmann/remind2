@@ -678,7 +678,7 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
 }
 
 # wrapper function so only providing variable, and title and filename is enough to call function above and print files
-plot_default <- function(ivar,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1){
+plot_default <- function(ivar,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1,fname){
   tmp_sr15 <- data_sr15 %>%
     filter(period == iper,
            variable == ivar,
@@ -698,5 +698,6 @@ plot_default <- function(ivar,iper=2050,irange=NULL,ititle="Comparison plot",ifa
   tmp_title <- ititle
   irange <- irange
   p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title,irange)
+  ggsave(paste0("plot_",fname,"_",tmstmp,".png"), p + theme(legend.position = "none"), width = 8, height = 8)
   return(p)
 }

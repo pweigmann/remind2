@@ -273,6 +273,7 @@ histRefModel <- c(
 # prepare IEA Data in case it is needed
 if (5 %in% params$sections) {
   u_ngfs_scenario <- c("Net Zero 2050")
+  tmstmp <- Sys.Date()
   
   # TODO phase 3 data, in this current form still produces errors (object 'Secondary Energy|Electricity|Wind' not found)
   # use "world" file from snapshot, do data preparation as Jerome did

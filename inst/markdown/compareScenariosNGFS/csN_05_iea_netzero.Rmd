@@ -4,19 +4,23 @@
 
 ## GDP
 ```{r}
-plot_default(ivar="GDP|MER", ititle="GDP|MER in 2050 [EJ/yr]")
-plot_default(ivar="GDP|PPP", ititle="GDP|PPP in 2050 [EJ/yr]", irange=c(200000, 300000))
+plot_default(ivar="GDP|MER", ititle="GDP|MER in 2030 [billion US$2010/yr]", fname="GDP_MER_2030", iper=2030)
+plot_default(ivar="GDP|MER", ititle="GDP|MER in 2050 [billion US$2010/yr]", fname="GDP_MER_2050")
+plot_default(ivar="GDP|PPP", ititle="GDP|PPP in 2030 [billion US$2010/yr]", fname="GDP_PPP_2030", iper=2030, irange=c(120000, 180000))
+plot_default(ivar="GDP|PPP", ititle="GDP|PPP in 2050 [billion US$2010/yr]", fname="GDP_PPP_2050", irange=c(200000, 300000))
 ```
 
 ## Population
 ```{r}
-plot_default(ivar="Population", ititle="Population in 2050 [EJ/yr]", irange=c(9000, 9500))
+plot_default(ivar="Population", ititle="Population in 2030 [million]", fname="pop_2030", irange=c(8000, 8500), iper=2030)
+plot_default(ivar="Population", ititle="Population in 2050 [million]", fname="pop_2050", irange=c(9000, 9500))
 ```
 
 
 ## Carbon Price
 ```{r}
-plot_default(ivar="Price|Carbon", ititle="Carbon Price in 2050 [EJ/yr]", irange=c(0, 2000))
+plot_default(ivar="Price|Carbon", ititle="Carbon Price in 2030 [US$2010/t CO2]", fname="carbon_price_2030", irange=c(0, 1000), iper=2030)
+plot_default(ivar="Price|Carbon", ititle="Carbon Price in 2050 [US$2010/t CO2]", fname="carbon_price_2050", irange=c(0, 2000))
 ```
 
 
@@ -24,28 +28,113 @@ plot_default(ivar="Price|Carbon", ititle="Carbon Price in 2050 [EJ/yr]", irange=
 
 ## Greenhouse Gas Emissions
 
-### Emissions|Kyoto Gases {-}
+### Kyoto Gases {-}
 
 ```{r}
-plot_default(ivar="Emissions|Kyoto Gases", ititle="Emissions of Kyoto Gases in 2050 [EJ/yr]", irange = c(0, 18000))
+plot_default(ivar="Emissions|Kyoto Gases", ititle="Emissions of Kyoto Gases in 2050 [GtCO2eq/yr]", 
+             fname="emi_kyoto_2030", irange = c(15000, 40000), iper=2030)
+plot_default(ivar="Emissions|Kyoto Gases", ititle="Emissions of Kyoto Gases in 2050 [GtCO2eq/yr]", 
+             fname="emi_kyoto_2050", irange = c(0, 18000))
 ```
 
-### Emissions|CO2 {-}
+### CO2 {-}
 
 ```{r}
-plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2050 [EJ/yr]", irange = c(-3000, 9000))
+plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2030 [GtCO2/yr]", 
+             fname="emi_co2_2030", irange = c(10000, 30000), iper=2030)
+plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2050 [GtCO2/yr]", 
+             fname="emi_co2_2050", irange = c(-3000, 9000))
 ```
+
+#### Electricity {-}
+
+```{r}
+plot_default(ivar="Emissions|CO2|Energy|Supply|Electricity", ititle="CO2 from Electricity Production in 2030 [GtCO2/yr]", 
+             fname="emi_co2_elec_2030", iper=2030)
+plot_default(ivar="Emissions|CO2|Energy|Supply|Electricity", ititle="CO2 from Electricity Production in 2050 [GtCO2/yr]", 
+             fname="emi_co2_elec_2050")
+```
+
+#### Industry {-}
+
+```{r}
+plot_default(ivar="Emissions|CO2|Energy|Demand|Industry", ititle="CO2 Emissions from Industry in 2030 [GtCO2/yr]", 
+             fname="emi_co2_industry_2030", iper=2030)
+plot_default(ivar="Emissions|CO2|Energy|Demand|Industry", ititle="CO2 Emissions from Industry in 2050 [GtCO2/yr]", 
+             fname="emi_co2_industry_2050")
+```
+
+#### Transportation {-}
+
+```{r}
+plot_default(ivar="Emissions|CO2|Energy|Demand|Transportation", ititle="CO2 Emissions from Transport in 2030 [GtCO2/yr]", 
+             fname="emi_co2_transp_2030", iper=2030)
+plot_default(ivar="Emissions|CO2|Energy|Demand|Transportation", ititle="CO2 Emissions from Transport in 2050 [GtCO2/yr]", 
+             fname="emi_co2_transp_2050")
+```
+
+#### Residential and Commercial {-}
+
+```{r}
+plot_default(ivar="Emissions|CO2|Energy|Demand|Residential and Commercial", ititle="CO2 Emissions from Buildings in 2030 [GtCO2/yr]", 
+             fname="emi_co2_build_2030", iper=2030)
+plot_default(ivar="Emissions|CO2|Energy|Demand|Residential and Commercial", ititle="CO2 Emissions from Buildings in 2050 [GtCO2/yr]", 
+             fname="emi_co2_build_2050")
+```
+
 
 ## Carbon Sequestration
 ```{r}
-plot_default(ivar="Carbon Sequestration|CCS", ititle="CCS in 2050 [GtCO2/yr]", ifac=1e-3)
+plot_default(ivar="Carbon Sequestration|CCS", ititle="CCS in 2030 [GtCO2/yr]", 
+             fname="CCS_2030", ifac=1e-3, iper=2030, irange = c(0, 6))
+plot_default(ivar="Carbon Sequestration|CCS", ititle="CCS in 2050 [GtCO2/yr]", fname="CCS_2050", ifac=1e-3)
 ```
 
 ### Afforestation & BECCS
+
 ```{r}
 # Use of carbon dioxide removal technologies: CO2 emissions captured and stored from bioenergy with
 # CCUS (BECCS) and direct air capture in the IPCC scenarios range from 3.5 Gt CO2 to 16 Gt CO2 in 2050,
 # compared with 1.9 Gt CO2 in the NZE Scenario.
+tmp_sr15 <- data_sr15 %>%
+  filter(period == 2030,
+         variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation"),
+         category %in% c("Below 1.5Â°C", "1.5C low overshoot")) %>%
+  mutate(value = value*1e-3) %>%
+  group_by(model, scenario, region, period) %>%
+  summarise(value = sum(value, na.rm=TRUE)) %>%
+  ungroup() %>%
+  mutate(source = "1 IPCC SR1.5")
+tmp_iea <- data.frame(model="IEA WEO 2021 Net2050", scenario = "NZE2050", source="2 IEA", period=2030, value=1.9, region="World", stringsAsFactors = FALSE)
+tmp_ngfs <- data_ngfs_world %>%
+  filter(period == 2030,
+         scenario %in% u_ngfs_scenario,
+         variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation")) %>%
+  mutate(value = value*1e-3) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  group_by(model, scenario, region, period) %>%
+  summarise(value = sum(value, na.rm=TRUE)) %>%
+  ungroup() %>%
+  mutate(source = "3 NGFS")
+
+tmp_ar6 <- data_ar6 %>%
+  filter(period == 2030,
+         variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation"),
+         category %in% c("C1")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(source = "2 IPCC AR6") %>%
+  mutate(value = (`Carbon Sequestration|CCS|Biomass` + `Carbon Sequestration|Land Use|Afforestation`)*1e-3)
+tmp_ar6 <- tmp_ar6 %>% filter(!is.na(value))
+
+tmp_title <- "Carbon dioxide removal (Afforestation & BECCS) \nin 2030 [GtCO2/yr]"
+
+p7 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
+plot(p7)
+ggsave(paste0("plot_CDR_Aff_BECCS_",tmstmp,".png"), p7 + theme(legend.position = "none"), width = 8, height = 8)
+
+
 tmp_sr15 <- data_sr15 %>%
   filter(period == 2050,
          variable %in% c("Carbon Sequestration|CCS|Biomass", "Carbon Sequestration|Land Use|Afforestation"),
@@ -82,48 +171,119 @@ tmp_title <- "Carbon dioxide removal (Afforestation & BECCS) \nin 2050 [GtCO2/yr
 
 p7 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
 plot(p7)
+ggsave(paste0("plot_CDR_Aff_BECCS_",tmstmp,".png"), p7 + theme(legend.position = "none"), width = 8, height = 8)
 ```
-
 
 # Energy
 
 ## Primary Energy
 
-### Total Fossil
+### Fossil {-}
 ```{r}
-plot_default(ivar="Primary Energy|Fossil", ititle="Total Fossils Use in 2050 [EJ/yr]")
+plot_default(ivar="Primary Energy|Fossil", ititle="Total Fossils Use in 2030 [EJ/yr]", 
+             fname="PE_fossil_2030", iper = 2030)
+plot_default(ivar="Primary Energy|Fossil", ititle="Total Fossils Use in 2050 [EJ/yr]", 
+             fname="PE_fossil_2050")
 ```
 
 ### Coal {-}
 ```{r}
-plot_default(ivar="Primary Energy|Coal", ititle="Coal Use in 2050 [EJ/yr]")
+plot_default(ivar="Primary Energy|Coal", ititle="Coal Use in 2030 [EJ/yr]", fname="PE_coal_2030", iper=2030)
+plot_default(ivar="Primary Energy|Coal", ititle="Coal Use in 2050 [EJ/yr]", fname="PE_coal_2050")
 ```
 
 ### Oil {-}
 ```{r}
-plot_default(ivar="Primary Energy|Oil", ititle="Oil Use in 2050 [EJ/yr]")
+plot_default(ivar="Primary Energy|Oil", ititle="Oil Use in 2030 [EJ/yr]", fname="PE_oil_2030", iper=2030)
+plot_default(ivar="Primary Energy|Oil", ititle="Oil Use in 2050 [EJ/yr]", fname="PE_oil_2050")
 ```
 
 ### Gas {-}
 ```{r}
-plot_default(ivar="Primary Energy|Gas", ititle="Gas Use in 2050 [EJ/yr]")
+plot_default(ivar="Primary Energy|Gas", ititle="Gas Use in 2030 [EJ/yr]", fname="PE_gas_2030", iper=2030)
+plot_default(ivar="Primary Energy|Gas", ititle="Gas Use in 2050 [EJ/yr]", fname="PE_gas_2050")
 ```
 
 ### Biomass {-}
 ```{r}
-plot_default(ivar="Primary Energy|Biomass", ititle="Primary Bioenergy in 2050 [EJ/yr]", irange=c(50, 200))
+plot_default(ivar="Primary Energy|Biomass", ititle="Primary Bioenergy in 2030 [EJ/yr]", 
+             fname="PE_biomass_2030", irange=c(50, 150), iper=2030)
+plot_default(ivar="Primary Energy|Biomass", ititle="Primary Bioenergy in 2050 [EJ/yr]", 
+             fname="PE_biomass_2050", irange=c(50, 250))
 ```
 
+### Non-Biomass Renewables {-}
+```{r}
+plot_default(ivar="Primary Energy|Non-Biomass Renewables", ititle="Primary Energy Non-Biomass Renewables in 2030 [EJ/yr]", 
+             fname="PE_non_biomass_2030", irange=c(0, 150), iper=2030)
+plot_default(ivar="Primary Energy|Non-Biomass Renewables", ititle="Primary Energy Non-Biomass Renewables in 2050 [EJ/yr]", 
+             fname="PE_non_biomass_2050", irange=c(0, 400))
+```
+
+### Nuclear {-}
+```{r}
+plot_default(ivar="Primary Energy|Nuclear", ititle="Primary Energy Nuclear in 2030 [EJ/yr]", 
+             fname="PE_nuclear_2030", irange=c(0, 50), iper=2030)
+plot_default(ivar="Primary Energy|Nuclear", ititle="Primary Energy Nuclear in 2050 [EJ/yr]", 
+             fname="PE_nuclear_2050", irange=c(0, 80))
+```
 
 ## Final Energy
 ```{r}
-plot_default(ivar="Final Energy",ititle="Final Energy Use in 2050 [EJ/yr]",irange=c(250,500))
-plot_default(ivar="Final Energy|Hydrogen",ititle="Hydrogen Use in 2050 [EJ/yr]")
+plot_default(ivar="Final Energy",ititle="Final Energy Use in 2030 [EJ/yr]", fname="FE_2030", irange=c(250,500), iper=2030)
+plot_default(ivar="Final Energy",ititle="Final Energy Use in 2050 [EJ/yr]", fname="FE_2050", irange=c(250,500))
+```
+
+### Hydrogen {-}
+```{r}
+plot_default(ivar="Final Energy|Hydrogen",ititle="Hydrogen Use in 2030 [EJ/yr]", fname="FE_hydrogen_2030", iper=2030)
+plot_default(ivar="Final Energy|Hydrogen",ititle="Hydrogen Use in 2050 [EJ/yr]", fname="FE_hydrogen_2050")
 ```
 
 ## Electricity Shares Solar/Wind
 ```{r}
-#== PLOT DATA ========================================================
+tmp_sr15 <- data_sr15 %>%
+  filter(period == 2030,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
+         category %in% c("Below 1.5Â°C", "1.5C low overshoot")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)# IEA data taken from NZE2021_Annex.xlsb > World_Elec > (Solar PV + Wind Ã¼ CSP) / Total generation  * 100
+tmp_ar6 <- data_ar6 %>%
+  filter(period == 2030,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
+         category %in% c("C1")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)# IEA data taken from NZE2021_Annex.xlsb > World_Elec > (Solar PV + Wind Ã¼ CSP) / Total generation  * 100
+tmp_ar6 <- tmp_ar6 %>% filter(!is.na(value))
+
+tmp_iea <- data_iea_nz %>%
+  filter(period == 2030,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar")) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)
+
+tmp_ngfs <- data_ngfs_world %>%
+  filter(period == 2030,
+         variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
+         scenario %in% u_ngfs_scenario) %>%
+  select(model, scenario, region, variable, period, value) %>%
+  pivot_wider(names_from = "variable", values_from = "value") %>%
+  mutate(variable = "", unit="") %>%
+  mutate(value = 100 * (`Secondary Energy|Electricity|Wind` + `Secondary Energy|Electricity|Solar`) / `Secondary Energy|Electricity`)
+tmp_title <- "Shares of wind and solar in electricity generation in 2030 [%]"
+
+p1 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
+print(p1)
+ggsave(paste0("0_plot_Elec_Share_Solar_Wind_",tmstmp,"_2030_withLegend.png"), p1, width = 8, height = 8)
+
+
+
 tmp_sr15 <- data_sr15 %>%
   filter(period == 2050,
          variable %in% c("Secondary Energy|Electricity", "Secondary Energy|Electricity|Wind", "Secondary Energy|Electricity|Solar"),
@@ -162,4 +322,6 @@ tmp_title <- "Shares of wind and solar in electricity generation in 2050 [%]"
 
 p1 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
 print(p1)
+ggsave(paste0("0_plot_Elec_Share_Solar_Wind_",tmstmp,"_withLegend.png"), p1, width = 8, height = 8)
+
 ```
