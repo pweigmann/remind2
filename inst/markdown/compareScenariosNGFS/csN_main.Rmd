@@ -302,6 +302,9 @@ if (5 %in% params$sections) {
   data_ar6 <- data_ar6 %>% filter(region=="World", period %in% seq(2005,2100,5))
   data_iea_nz <- read.quitte("C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/historical_IEA_nz2050.csv")
   data_iea_nz$scenario <- "NZE2050"
+  # divide IEA PE Nuclear by 3, as they scale it up in their reporting
+  data_iea_nz[data_iea_nz$variable == "Primary Energy|Nuclear", "value"] = 
+    data_iea_nz[data_iea_nz$variable == "Primary Energy|Nuclear", "value"] / 3
 }
 ```
 

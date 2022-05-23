@@ -673,7 +673,7 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
     guides(
       colour=guide_legend(ncol=2, override.aes = list(fill = c("#e41a1c", "#377eb8", "#4daf4a", "#ffff99"), shape=c(21,21,21,22))),
       fill=guide_legend(ncol=2),
-      shape=FALSE)
+      shape="none")
   return(p)
 }
 

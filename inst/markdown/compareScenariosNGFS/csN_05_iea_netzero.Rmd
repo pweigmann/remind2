@@ -32,18 +32,18 @@ plot_default(ivar="Price|Carbon", ititle="Carbon Price in 2050 [US$2010/t CO2]",
 
 ```{r}
 plot_default(ivar="Emissions|Kyoto Gases", ititle="Emissions of Kyoto Gases in 2050 [GtCO2eq/yr]", 
-             fname="emi_kyoto_2030", irange = c(15000, 40000), iper=2030)
+             fname="emi_kyoto_2030", irange = c(15, 45), iper=2030, ifac=0.001)
 plot_default(ivar="Emissions|Kyoto Gases", ititle="Emissions of Kyoto Gases in 2050 [GtCO2eq/yr]", 
-             fname="emi_kyoto_2050", irange = c(0, 18000))
+             fname="emi_kyoto_2050", irange = c(0, 18), ifac=0.001)
 ```
 
 ### CO2 {-}
 
 ```{r}
 plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2030 [GtCO2/yr]", 
-             fname="emi_co2_2030", irange = c(10000, 30000), iper=2030)
+             fname="emi_co2_2030", irange = c(10, 30), iper=2030, ifac=0.001)
 plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2050 [GtCO2/yr]", 
-             fname="emi_co2_2050", irange = c(-3000, 9000))
+             fname="emi_co2_2050", irange = c(-3, 9), ifac=0.001)
 ```
 
 #### Electricity {-}
