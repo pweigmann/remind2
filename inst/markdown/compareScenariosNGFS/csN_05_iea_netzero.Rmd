@@ -4,7 +4,7 @@
 
 ## GDP
 ```{r}
-plot_default(ivar="GDP|MER", ititle="GDP|MER in 2030 [billion US$2010/yr]", fname="GDP_MER_2030", iper=2030)
+plot_default(ivar="GDP|MER", ititle="GDP|MER in 2030 [billion US$2010/yr]", fname="GDP_MER_2030", iper=2030,irange=c(80000, 120000))
 plot_default(ivar="GDP|MER", ititle="GDP|MER in 2050 [billion US$2010/yr]", fname="GDP_MER_2050")
 plot_default(ivar="GDP|PPP", ititle="GDP|PPP in 2030 [billion US$2010/yr]", fname="GDP_PPP_2030", iper=2030, irange=c(120000, 180000))
 plot_default(ivar="GDP|PPP", ititle="GDP|PPP in 2050 [billion US$2010/yr]", fname="GDP_PPP_2050", irange=c(200000, 300000))
@@ -46,40 +46,49 @@ plot_default(ivar="Emissions|CO2", ititle="CO2 Emissions in 2050 [GtCO2/yr]",
              fname="emi_co2_2050", irange = c(-3, 9), ifac=0.001)
 ```
 
+#### Energy {-}
+
+```{r}
+plot_default(ivar="Emissions|CO2|Energy", ititle="CO2 Energy Emissions in 2030 [GtCO2/yr]", 
+             fname="emi_co2_energy_2030", iper=2030, ifac=0.001)
+plot_default(ivar="Emissions|CO2|Energy", ititle="CO2 Energy Emissions in 2050 [GtCO2/yr]", 
+             fname="emi_co2_energy_2050", ifac=0.001)
+```
+
 #### Electricity {-}
 
 ```{r}
 plot_default(ivar="Emissions|CO2|Energy|Supply|Electricity", ititle="CO2 from Electricity Production in 2030 [GtCO2/yr]", 
-             fname="emi_co2_elec_2030", iper=2030)
+             fname="emi_co2_elec_2030", iper=2030, ifac=0.001)
 plot_default(ivar="Emissions|CO2|Energy|Supply|Electricity", ititle="CO2 from Electricity Production in 2050 [GtCO2/yr]", 
-             fname="emi_co2_elec_2050")
+             fname="emi_co2_elec_2050", ifac=0.001)
 ```
 
 #### Industry {-}
 
 ```{r}
 plot_default(ivar="Emissions|CO2|Energy|Demand|Industry", ititle="CO2 Emissions from Industry in 2030 [GtCO2/yr]", 
-             fname="emi_co2_industry_2030", iper=2030)
+             fname="emi_co2_industry_2030", iper=2030, ifac=0.001)
 plot_default(ivar="Emissions|CO2|Energy|Demand|Industry", ititle="CO2 Emissions from Industry in 2050 [GtCO2/yr]", 
-             fname="emi_co2_industry_2050")
+             fname="emi_co2_industry_2050", ifac=0.001)
 ```
 
 #### Transportation {-}
 
 ```{r}
 plot_default(ivar="Emissions|CO2|Energy|Demand|Transportation", ititle="CO2 Emissions from Transport in 2030 [GtCO2/yr]", 
-             fname="emi_co2_transp_2030", iper=2030)
+             fname="emi_co2_transp_2030", iper=2030, ifac=0.001)
 plot_default(ivar="Emissions|CO2|Energy|Demand|Transportation", ititle="CO2 Emissions from Transport in 2050 [GtCO2/yr]", 
-             fname="emi_co2_transp_2050")
+             fname="emi_co2_transp_2050", ifac=0.001)
 ```
 
 #### Residential and Commercial {-}
 
 ```{r}
 plot_default(ivar="Emissions|CO2|Energy|Demand|Residential and Commercial", ititle="CO2 Emissions from Buildings in 2030 [GtCO2/yr]", 
-             fname="emi_co2_build_2030", iper=2030)
+             fname="emi_co2_build_2030", iper=2030, ifac=0.001)
 plot_default(ivar="Emissions|CO2|Energy|Demand|Residential and Commercial", ititle="CO2 Emissions from Buildings in 2050 [GtCO2/yr]", 
-             fname="emi_co2_build_2050")
+             fname="emi_co2_build_2050", ifac=0.001)
 ```
 
 
@@ -132,7 +141,7 @@ tmp_title <- "Carbon dioxide removal (Afforestation & BECCS) \nin 2030 [GtCO2/yr
 
 p7 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
 plot(p7)
-ggsave(paste0("plot_CDR_Aff_BECCS_",tmstmp,".png"), p7 + theme(legend.position = "none"), width = 8, height = 8)
+ggsave(paste0("plot_CDR_Aff_BECCS_",tmstmp,".png"), p7 + theme(legend.position = "none"), width = 10, height = 10)
 
 
 tmp_sr15 <- data_sr15 %>%
@@ -171,7 +180,7 @@ tmp_title <- "Carbon dioxide removal (Afforestation & BECCS) \nin 2050 [GtCO2/yr
 
 p7 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
 plot(p7)
-ggsave(paste0("plot_CDR_Aff_BECCS_",tmstmp,".png"), p7 + theme(legend.position = "none"), width = 8, height = 8)
+ggsave(paste0("plot_CDR_Aff_BECCS_",tmstmp,".png"), p7 + theme(legend.position = "none"), width = 10, height = 10)
 ```
 
 # Energy
@@ -223,9 +232,9 @@ plot_default(ivar="Primary Energy|Non-Biomass Renewables", ititle="Primary Energ
 ### Nuclear {-}
 ```{r}
 plot_default(ivar="Primary Energy|Nuclear", ititle="Primary Energy Nuclear in 2030 [EJ/yr]", 
-             fname="PE_nuclear_2030", irange=c(0, 50), iper=2030)
+             fname="PE_nuclear_2030", irange=c(0, 35), iper=2030)
 plot_default(ivar="Primary Energy|Nuclear", ititle="Primary Energy Nuclear in 2050 [EJ/yr]", 
-             fname="PE_nuclear_2050", irange=c(0, 80))
+             fname="PE_nuclear_2050", irange=c(0, 60))
 ```
 
 ## Final Energy
@@ -280,7 +289,7 @@ tmp_title <- "Shares of wind and solar in electricity generation in 2030 [%]"
 
 p1 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
 print(p1)
-ggsave(paste0("0_plot_Elec_Share_Solar_Wind_",tmstmp,"_2030_withLegend.png"), p1, width = 8, height = 8)
+ggsave(paste0("0_plot_Elec_Share_Solar_Wind_",tmstmp,"_2030_withLegend.png"), p1, width = 10, height = 10)
 
 
 
@@ -322,6 +331,6 @@ tmp_title <- "Shares of wind and solar in electricity generation in 2050 [%]"
 
 p1 <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title)
 print(p1)
-ggsave(paste0("0_plot_Elec_Share_Solar_Wind_",tmstmp,"_withLegend.png"), p1, width = 8, height = 8)
+ggsave(paste0("0_plot_Elec_Share_Solar_Wind_",tmstmp,"_withLegend.png"), p1, width = 10, height = 10)
 
 ```

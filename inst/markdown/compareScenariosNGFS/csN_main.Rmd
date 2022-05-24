@@ -277,6 +277,7 @@ if (5 %in% params$sections) {
   
   # TODO phase 3 data, in this current form still produces errors (object 'Secondary Energy|Electricity|Wind' not found)
   # use "world" file from snapshot, do data preparation as Jerome did
+
 #   snapshot_world <- paste0(params$snapshot, "/output/snapshot_world.csv")
 #   data_p3 <- read.csv(snapshot_world) %>%
 #     rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
@@ -294,7 +295,7 @@ if (5 %in% params$sections) {
 #   mutate(model = ifelse(grepl("REMIND", model),    "REMIND-MAgPIE", model))
   
   
-  # TODO: this could be replaced with new data/generic phase 2 data 
+  # TODO: this could be replaced with new data/generic phase 2 data, use data from historical.mif as imported above
   load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/ngfs_data_world_v2p2.RData")
   # Load SR 15, AR6 data
   load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/IPCC_data_sr15_ar6.RData")
@@ -305,6 +306,10 @@ if (5 %in% params$sections) {
   # divide IEA PE Nuclear by 3, as they scale it up in their reporting
   data_iea_nz[data_iea_nz$variable == "Primary Energy|Nuclear", "value"] = 
     data_iea_nz[data_iea_nz$variable == "Primary Energy|Nuclear", "value"] / 3
+  # manually add and rename CO2 energy emissions from historical.mif
+  data_iea_nz <- bind_rows(data_iea_nz, data %>% 
+                             filter(model=="IEA WEO 2021 Net2050", variable=="Emi|CO2|Energy") %>%
+                             mutate(variable="Emissions|CO2|Energy", scenario="NZE2050"))
 }
 ```
 

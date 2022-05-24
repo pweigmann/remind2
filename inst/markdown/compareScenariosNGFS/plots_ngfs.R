@@ -698,6 +698,6 @@ plot_default <- function(ivar,iper=2050,irange=NULL,ititle="Comparison plot",ifa
   tmp_title <- ititle
   irange <- irange
   p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title,irange)
-  ggsave(paste0("plot_",fname,"_",tmstmp,".png"), p + theme(legend.position = "none"), width = 8, height = 8)
+  ggsave(paste0("plot_",fname,"_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
   return(p)
 }
