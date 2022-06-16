@@ -272,27 +272,28 @@ histRefModel <- c(
 ```{r prepare IEA net-zero data}
 # prepare IEA Data in case it is needed
 if (5 %in% params$sections) {
-  u_ngfs_scenario <- c("Net Zero 2050")
+  u_ngfs_scenario <- c("Net Zero 2050")  # TODO: this should be solved differently, either hardcode or make truly flexible
   tmstmp <- Sys.Date()
   
   # TODO phase 3 data, in this current form still produces errors (object 'Secondary Energy|Electricity|Wind' not found)
   # use "world" file from snapshot, do data preparation as Jerome did
 
-#   snapshot_world <- paste0(params$snapshot, "/output/snapshot_world.csv")
-#   data_p3 <- read.csv(snapshot_world) %>%
-#     rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
-#     pivot_longer(names_to = "period", values_to = "value", cols = c(-"model", -"scenario", -"region", -"variable", -"unit")) %>%
-#     mutate(period = as.numeric(substr(period,start = 2,stop = 5))) %>%
-#     filter(!is.na(value))
-# 
-#   data_ngfs_world <- data_p3 %>% filter(region=="World", period %in% seq(2005,2100,5))
-#   data_ngfs_world$model <- as.character(data_ngfs_world$model)
-# 
-# data_ngfs_world <- data_ngfs_world %>%
-#   filter(!grepl("*IntegratedPhysicalDamages", model)) %>%
-#   mutate(model = ifelse(grepl("GCAM", model),      "GCAM", model)) %>%
-#   mutate(model = ifelse(grepl("MESSAGE", model),   "MESSAGEix-GLOBIOM", model)) %>%
-#   mutate(model = ifelse(grepl("REMIND", model),    "REMIND-MAgPIE", model))
+  snapshot_world_p3 <- paste0(params$snapshot, "/output/snapshot_world.csv")
+  data_p3 <- read.csv(snapshot_world_p3) %>%
+    rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+    pivot_longer(names_to = "period", values_to = "value", cols = c(-"model", -"scenario", -"region", -"variable", -"unit")) %>%
+    mutate(period = as.numeric(substr(period,start = 2,stop = 5))) %>%
+    filter(!is.na(value))
+
+  data_ngfs_world_p3 <- data_p3 %>% filter(region=="World", period %in% seq(2005,2100,5), scenario=="o_1p5c")
+  data_ngfs_world_p3[data_ngfs_world_p3$scenario == "o_1p5c", "scenario"] <- "Net Zero 2050"
+  data_ngfs_world_p3$model <- as.character(data_ngfs_world_p3$model)
+
+  data_ngfs_world_p3 <- data_ngfs_world_p3 %>%
+    filter(!grepl("*IntegratedPhysicalDamages", model)) %>%
+    mutate(model = ifelse(grepl("GCAM", model),      "GCAM", model)) %>%
+    mutate(model = ifelse(grepl("MESSAGE", model),   "MESSAGEix-GLOBIOM", model)) %>%
+    mutate(model = ifelse(grepl("REMIND", model),    "REMIND-MAgPIE", model))
   
   
   # TODO: this could be replaced with new data/generic phase 2 data, use data from historical.mif as imported above

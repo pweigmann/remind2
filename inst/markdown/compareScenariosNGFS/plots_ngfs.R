@@ -678,26 +678,46 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
 }
 
 # wrapper function so only providing variable, and title and filename is enough to call function above and print files
-plot_default <- function(ivar,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1,fname){
+plot_default <- function(ivar,histvar=NULL,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1,fname,phase=2){
   tmp_sr15 <- data_sr15 %>%
     filter(period == iper,
            variable == ivar,
            category %in% c("Below 1.5Â°C", "1.5C low overshoot")) %>%
-    mutate(source = "1 IPCC SR1.5",value = value*ifac)
+    mutate(source = "1 IPCC SR1.5", value = value*ifac)
   tmp_ar6 <- data_ar6 %>%
     filter(period == iper,
            variable == ivar,
            category %in% c("C1")) %>%
-    mutate(source = "2 IPCC AR6",value = value*ifac)
+    mutate(source = "2 IPCC AR6", value = value*ifac)
   tmp_iea <- data_iea_nz %>% filter(period==iper,variable==ivar) %>% mutate(value = value*ifac)
-  tmp_ngfs <- data_ngfs_world %>%
-    filter(period == iper,
-           scenario %in% u_ngfs_scenario,
-           variable == ivar) %>%
-    mutate(source = "3 NGFS",value = value*ifac)
-  tmp_title <- ititle
+  if (phase == 2) {
+    tmp_ngfs <- data_ngfs_world %>%
+      filter(period == iper,
+             scenario == "Net Zero 2050",
+             variable == ivar) %>%
+      mutate(source = "3 NGFS", value = value*ifac)
+    tmp_title <- paste(ititle, "- Phase 2")
+  } else if (phase == 3) {
+    tmp_ngfs <- data_ngfs_world_p3 %>%
+      filter(period == iper,
+             scenario == "Net Zero 2050",
+             variable == ivar) %>%
+      mutate(source = "3 NGFS", value = value*ifac)
+    tmp_title <- paste(ititle, "- Phase 3")
+  }
   irange <- irange
   p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title,irange)
-  ggsave(paste0("plot_",fname,"_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
+  # add horizontal line with recent historical values if historical variable name given
+  if (!is.null(histvar)) {
+    hist_value <- filter(data, scenario == "historical", region== "World", period==2019, variable==histvar)
+    p <- p + geom_hline(yintercept=hist_value[[1,"value"]], linetype=2)
+         # annotate("text", y=hist_value[[1,"value"]], label="2019")
+  }
+  if (phase == 2) {
+    ggsave(paste0("plot_",fname,"_p2_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
+  } else if (phase == 3) {
+    ggsave(paste0("plot_",fname,"_p3_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
+  }
   return(p)
 }
+
