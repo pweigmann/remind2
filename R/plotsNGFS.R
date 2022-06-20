@@ -530,7 +530,7 @@ showLinePlots_NGFS <- function(
 # plots sr15 and ar6 data as boxplots, and IEA and NGFS data as points on top
 plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i_data_ar6,
                                           i_title, yrange=NULL) {
-
+  # get statistical information on data
   tmp_sr15_stats <- i_data_sr15 %>%
     group_by(period) %>%
     summarise(min=min(value),
@@ -551,6 +551,7 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
     ungroup() %>%
     mutate(source = "2 IPCC AR6")
 
+  # plot 25th to 75th percentile box plus line for median
   p <- ggplot(i_data_sr15 %>% mutate(source = "1 IPCC SR1.5")) +
     #geom_boxplot(aes(x=period, y=value), col="#999999", fill="#66666633") +
     geom_rect(aes(xmin=period-0.8, xmax=period-0.2, ymin=p25, ymax=p75),
@@ -677,20 +678,10 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
   return(p)
 }
 
-# IEA Net-Zero Comparison Plots
 # plots ar6 data as boxplots, and IEA and NGFS data as points on top
 plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i_data_ar6,
-                                          i_title, yrange=NULL, histvar=NULL) {
-  tmp_sr15_stats <- i_data_sr15 %>%
-    group_by(period) %>%
-    summarise(min=min(value),
-              p25=quantile(value, 0.25),
-              med=median(value),
-              p75=quantile(value, 0.75),
-              max=max(value)) %>%
-    ungroup() %>%
-    mutate(source = "1 IPCC SR1.5")
-
+                                          i_title, yrange=NULL, histvar=NULL, ifac=1) {
+  # get statistical information on data
   tmp_ar6_stats <- i_data_ar6 %>%
     group_by(period) %>%
     summarise(min=min(value),
@@ -701,50 +692,69 @@ plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i
     ungroup() %>%
     mutate(source = "2 IPCC AR6")
 
+  # plot 25th to 75th percentile box plus line for median
   p <- ggplot() +
     geom_rect(aes(xmin=period+0.2, xmax=period+0.8, ymin=p25, ymax=p75),
-              data = tmp_ar6_stats,
-              col="#ffa089", fill="#ffcba4") +
+              data = tmp_ar6_stats, col="#ffa089", fill="#ffcba4") +
     geom_segment(aes(x=period+0.2, xend=period+0.8, y=med, yend=med),
-                 data = tmp_ar6_stats,
-                 size=2,
-                 col="#ffa089")
+                 data = tmp_ar6_stats, size=2, col="#ffa089")
 
+  # plot full range of scenario data and add labels if cut-off happens based on chosen y-range
   if (!is.null(yrange)) {
+    # data range lower than min of y-axis
+    if (tmp_ar6_stats$min < yrange[1]) {
+      p <- p +
+        geom_segment(aes(x=period+0.5, xend=period+0.5, y=yrange[1], yend=p25),
+                     data = tmp_ar6_stats,
+                     col="#ffa089") +
+        # label showing min and max at the end of the scales
+        geom_point(aes(x=xpos, y=ypos),
+                   data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3,
+                                     ypos = yrange[1] + (yrange[2]-yrange[1])*0.03),
+                   pch=25, size=3, col="#ffa089") +
+        geom_text(aes(x=xpos, y=ypos, label=text),
+                  data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3,
+                                    ypos = yrange[1] + (yrange[2]-yrange[1])*0.07,
+                                    text = paste0("Min: ", round(tmp_ar6_stats$min, digits = 0))),
+                  size=5, col="#ffa089")
+    # no cut-off happening
+    } else {
+      p <- p +
+        geom_segment(aes(x=period+0.5, xend=period+0.5, y=min, yend=p25),
+                     data = tmp_ar6_stats,
+                     col="#ffa089")
+    }
+    # data range higher than max of y-axis
+    if (tmp_ar6_stats$max > yrange[2]) {
+      p <- p +
+        geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=yrange[2]),
+                     data = tmp_ar6_stats,
+                     col="#ffa089") +
+        # label showing min and max at the end of the scales
+        geom_point(aes(x=xpos, y=ypos),
+                   data = data.frame(xpos = unique(tmp_ar6_stats$period) + 0.3,
+                                     ypos = yrange[2] - (yrange[2]-yrange[1])*0.03),
+                   pch=24, size=3, col="#ffa089") +
+        geom_text(aes(x=xpos, y=ypos, label=text),
+                  data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3,
+                                    ypos = yrange[2] - (yrange[2]-yrange[1])*0.07,
+                                    text = paste0("Max: ", round(tmp_ar6_stats$max, digits = 0))),
+                  size=5, col="#ffa089")
+    # no cut-off happening
+    } else {
+      p <- p +
+        geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=max),
+                     data = tmp_ar6_stats,
+                     col="#ffa089")
+    }
+    # add coordinate system based on yrange
     p <- p +
-      geom_segment(aes(x=period+0.5, xend=period+0.5, y=yrange[1], yend=p25),
-                   data = tmp_ar6_stats,
-                   col="#ffa089") +
-      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=yrange[2]),
-                   data = tmp_ar6_stats,
-                   col="#ffa089") +
       scale_y_continuous(expand=c(0,0)) +
       coord_cartesian(ylim = yrange, clip = "off")
-    #label showing min and max at the end of the scales
-    p <- p +
-      geom_point(aes(x=xpos, y=ypos),
-                 data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[1] + (yrange[2]-yrange[1])*0.03),
-                 pch=25,                  size=3,                  col="#ffa089") +
-      geom_text(aes(x=xpos, y=ypos, label=text),
-                data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[1] + (yrange[2]-yrange[1])*0.07, text = paste0("Min: ", round(tmp_ar6_stats$min, digits = 0))),
-                size=5,                 col="#ffa089")
 
-    p <- p +
-      geom_point(aes(x=xpos, y=ypos),
-                 data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[2] - (yrange[2]-yrange[1])*0.03),
-                 pch=24,                  size=3,                  col="#ffa089") +
-      geom_text(aes(x=xpos, y=ypos, label=text),
-                data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[2] - (yrange[2]-yrange[1])*0.07, text = paste0("Max: ", round(tmp_ar6_stats$max, digits = 0))),
-                size=5,                 col="#ffa089")
   } else {
     p <- p +
-      geom_segment(aes(x=period+0.5, xend=period+0.5, y=min, yend=p25),
-                   data = tmp_ar6_stats,
-                   col="#ffa089") +
-      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=max),
-                   data = tmp_ar6_stats,
-                   col="#ffa089") +
-      scale_y_continuous(expand=c(0,0)) +
+      scale_y_continuous(expand=c(0, 0)) +
       coord_cartesian(clip = "off")
   }
 
@@ -780,8 +790,8 @@ plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i
       shape="none")
   # insert historical data as dashed line (assumes data is available in global scope)
   hist_value <- filter(data, scenario == "historical", region== "World", period==2019, variable==histvar)
-  p <- p + geom_hline(yintercept=hist_value[[1,"value"]], linetype=2) +
-    annotate("text", x= 2030-0.5, y=hist_value[[1,"value"]], label="2019", vjust = -0.5)
+  p <- p + geom_hline(yintercept=hist_value[[1,"value"]]*ifac, linetype=2) +
+    annotate("text", x= 2030-0.5, y=hist_value[[1,"value"]]*ifac, label="2019", vjust = -0.5)
   return(p)
 }
 
@@ -817,13 +827,13 @@ plot_default <- function(ivar,histvar=NULL,iper=2050,irange=NULL,ititle="Compari
     tmp_title <- paste(ititle, "- Phase 3")
   }
   irange <- irange
-
+  ifac <- ifac
   # add horizontal line with recent historical values instead of sr15 box if historical variable name given
   if (is.null(histvar)) {
     p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange)
   } else {
     histvar <- histvar
-    p <- plot_comparison_ar6_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange, histvar)
+    p <- plot_comparison_ar6_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange, histvar, ifac)
   }
 
   if (phase == 2) {
