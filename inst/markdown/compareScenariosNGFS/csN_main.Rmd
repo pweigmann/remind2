@@ -86,7 +86,7 @@ library(quitte)
 library(mip)
 # NGFS specific
 library(vroom)
-source("C://Users/pascalwe/Code/NGFS/remind2/inst/markdown/compareScenariosNGFS/plots_ngfs.R")
+#source("C://Users/pascalwe/Code/NGFS/remind2/inst/markdown/compareScenariosNGFS/plots_ngfs.R")
 ```
 
 
@@ -180,6 +180,7 @@ params$mifHist %>%
   data_hist
 ```
 
+
 ```{r preprocess}
 # Filter years and NA.
 data_p3 %>%
@@ -269,15 +270,14 @@ histRefModel <- c(
   "GDP|PPP pCap" = "James_IMF")
 ```
 
+
 ```{r prepare IEA net-zero data}
 # prepare IEA Data in case it is needed
-if (5 %in% params$sections) {
+if (any(c(5,6) %in% params$sections)) {
   u_ngfs_scenario <- c("Net Zero 2050")  # TODO: this should be solved differently, either hardcode or make truly flexible
   tmstmp <- Sys.Date()
   
-  # TODO phase 3 data, in this current form still produces errors (object 'Secondary Energy|Electricity|Wind' not found)
   # use "world" file from snapshot, do data preparation as Jerome did
-
   snapshot_world_p3 <- paste0(params$snapshot, "/output/snapshot_world.csv")
   data_p3 <- read.csv(snapshot_world_p3) %>%
     rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
@@ -297,9 +297,9 @@ if (5 %in% params$sections) {
   
   
   # TODO: this could be replaced with new data/generic phase 2 data, use data from historical.mif as imported above
-  load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/ngfs_data_world_v2p2.RData")
+  b <- load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/ngfs_data_world_v2p2.RData")
   # Load SR 15, AR6 data
-  load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/IPCC_data_sr15_ar6.RData")
+  a <- load(file="C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/IPCC_data_sr15_ar6.RData")
   #reduce size...
   data_ar6 <- data_ar6 %>% filter(region=="World", period %in% seq(2005,2100,5))
   data_iea_nz <- read.quitte("C:/Users/pascalwe/Code/NGFS/iea_netzero_2021/data/historical_IEA_nz2050.csv")
@@ -312,100 +312,6 @@ if (5 %in% params$sections) {
                              filter(model=="IEA WEO 2021 Net2050", variable=="Emi|CO2|Energy") %>%
                              mutate(variable="Emissions|CO2|Energy", scenario="NZE2050"))
 }
-```
-
-```{r calcuate pCap variables}
-# For all variables in following table, add a new variable to data with the name
-# "OldName pCap". Calculate its value by
-#     OldValue * conversionFactor
-# and set its unit to newUnit.
-# The new variable "OldName pCap" will be available in the plot sections.
-# pCapVariables <- tribble(
-#   ~variable, ~newUnit, ~conversionFactor,
-#   "GDP|PPP", "kUS$2005", 1e6,
-#   "FE", "GJ/yr", 1e9,
-#   "FE|CDR", "GJ/yr", 1e9,
-#   "FE|Transport", "GJ/yr", 1e9,
-#   "FE|Buildings", "GJ/yr", 1e9,
-#   "FE|Industry", "GJ/yr", 1e9,
-#   "FE|Buildings|Heating", "GJ/yr", 1e9,
-#   "FE|Buildings|Appliances and Light", "GJ/yr", 1e9,
-#   "FE|Buildings|Cooking and Water", "GJ/yr", 1e9,
-#   "FE|Buildings|Space Cooling", "GJ/yr", 1e9,
-#   "FE|Buildings|Space Heating", "GJ/yr", 1e9,
-#   "ES|Transport|Pass", "km/yr", 1e9,
-#   "ES|Transport|Pass|Road|LDV", "km/yr", 1e9,
-#   "ES|Transport|Pass|non-LDV", "km/yr", 1e9,
-#   "ES|Transport|Pass|Road|LDV|BEV", "km/yr", 1e9,
-#   "ES|Transport|Pass|Road|LDV|FCEV", "km/yr", 1e9,
-#   "ES|Transport|Pass|Road|LDV|Gases", "km/yr", 1e9,
-#   "ES|Transport|Pass|Road|LDV|Hybrid Electric", "km/yr", 1e9,
-#   "ES|Transport|Pass|Road|LDV|Liquids", "km/yr", 1e9,
-#   "ES|Transport|Freight", "tkm/yr", 1e9,
-#   "ES|Transport|Freight|Road|Electric", "tkm/yr", 1e9,
-#   "ES|Transport|Freight|Road|FCEV", "tkm/yr", 1e9,
-#   "ES|Transport|Freight|Road|Gases", "tkm/yr", 1e9,
-#   "ES|Transport|Freight|Road|Liquids", "tkm/yr", 1e9)
-# 
-# data %>%
-#   filter(variable == "Population") %>%
-#   filter(scenario != "historical" | model == histRefModel["Population"]) %>%
-#   select(scenario, region, period, value) %>%
-#   mutate(
-#     population = value * 1e6, # unit originally is million, now is 1
-#     value = NULL) ->
-#   dataPop
-# 
-# data %>%
-#   inner_join(pCapVariables, "variable") %>%
-#   left_join(dataPop, c("scenario", "region", "period")) %>%
-#   mutate(
-#     value = value / population * conversionFactor,
-#     variable = paste0(variable, " pCap"),
-#     unit = newUnit,
-#     newUnit = NULL, conversionFactor = NULL, population = NULL) ->
-#   dataPCap
-# 
-# data %>%
-#   bind_rows(dataPCap) ->
-#   data
-```
-
-
-```{r calcuate pGDP variables}
-# data %>%
-#   filter(variable == "GDP|PPP pCap") %>%
-#   filter(scenario != "historical" | model == histRefModel["GDP|PPP pCap"]) %>%
-#   select(scenario, region, period, value) %>%
-#   rename(gdp = value) ->
-#   dataGDP
-# 
-# # For all variables in following table, add a new variable to data with the name
-# # "OldName pGDP". Calculate its value by
-# #     OldValue / (GDP|PPP pCap) * conversionFactor
-# # and set its unit to newUnit.
-# # The new variable "OldName pGDP" will be available in the plot sections.
-# pGdpVariables <- tribble(
-#   ~variable, ~newUnit, ~conversionFactor,
-#   "FE", "MJ/US$2005", 1e3,
-#   "FE|CDR", "MJ/US$2005", 1e3,
-#   "FE|Transport", "MJ/US$2005", 1e3,
-#   "FE|Buildings", "MJ/US$2005", 1e3,
-#   "FE|Industry", "MJ/US$2005", 1e3)
-# 
-# data %>%
-#   inner_join(pGdpVariables, "variable") %>%
-#   left_join(dataGDP, c("scenario", "region", "period")) %>%
-#   mutate(
-#     value = value / gdp * conversionFactor,
-#     variable = paste0(variable, " pGDP"),
-#     unit = newUnit,
-#     newUnit = NULL, conversionFactor = NULL, gdp = NULL) ->
-#   dataPGdp
-# 
-# data %>%
-#   bind_rows(dataPGdp) ->
-#   data
 ```
 
 

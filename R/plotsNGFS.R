@@ -677,7 +677,118 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
   return(p)
 }
 
+# IEA Net-Zero Comparison Plots
+# plots ar6 data as boxplots, and IEA and NGFS data as points on top
+plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i_data_ar6,
+                                          i_title, yrange=NULL, histvar=NULL) {
+  tmp_sr15_stats <- i_data_sr15 %>%
+    group_by(period) %>%
+    summarise(min=min(value),
+              p25=quantile(value, 0.25),
+              med=median(value),
+              p75=quantile(value, 0.75),
+              max=max(value)) %>%
+    ungroup() %>%
+    mutate(source = "1 IPCC SR1.5")
+
+  tmp_ar6_stats <- i_data_ar6 %>%
+    group_by(period) %>%
+    summarise(min=min(value),
+              p25=quantile(value, 0.25),
+              med=median(value),
+              p75=quantile(value, 0.75),
+              max=max(value)) %>%
+    ungroup() %>%
+    mutate(source = "2 IPCC AR6")
+
+  p <- ggplot() +
+    geom_rect(aes(xmin=period+0.2, xmax=period+0.8, ymin=p25, ymax=p75),
+              data = tmp_ar6_stats,
+              col="#ffa089", fill="#ffcba4") +
+    geom_segment(aes(x=period+0.2, xend=period+0.8, y=med, yend=med),
+                 data = tmp_ar6_stats,
+                 size=2,
+                 col="#ffa089")
+
+  if (!is.null(yrange)) {
+    p <- p +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=yrange[1], yend=p25),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=yrange[2]),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      scale_y_continuous(expand=c(0,0)) +
+      coord_cartesian(ylim = yrange, clip = "off")
+    #label showing min and max at the end of the scales
+    p <- p +
+      geom_point(aes(x=xpos, y=ypos),
+                 data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[1] + (yrange[2]-yrange[1])*0.03),
+                 pch=25,                  size=3,                  col="#ffa089") +
+      geom_text(aes(x=xpos, y=ypos, label=text),
+                data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[1] + (yrange[2]-yrange[1])*0.07, text = paste0("Min: ", round(tmp_ar6_stats$min, digits = 0))),
+                size=5,                 col="#ffa089")
+
+    p <- p +
+      geom_point(aes(x=xpos, y=ypos),
+                 data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[2] - (yrange[2]-yrange[1])*0.03),
+                 pch=24,                  size=3,                  col="#ffa089") +
+      geom_text(aes(x=xpos, y=ypos, label=text),
+                data = data.frame(xpos = unique(tmp_ar6_stats$period)+0.3, ypos = yrange[2] - (yrange[2]-yrange[1])*0.07, text = paste0("Max: ", round(tmp_ar6_stats$max, digits = 0))),
+                size=5,                 col="#ffa089")
+  } else {
+    p <- p +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=min, yend=p25),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=max),
+                   data = tmp_ar6_stats,
+                   col="#ffa089") +
+      scale_y_continuous(expand=c(0,0)) +
+      coord_cartesian(clip = "off")
+  }
+
+  p <- p +
+    geom_point(aes(x=period, y=value, shape=scenario, color=model, bg=model), data=i_data_iea, size=14) +
+    geom_point(aes(x=period, y=value, shape=scenario, color=model, bg=model), data=i_data_ngfs %>% mutate(source = "3 NGFS"), size=9) +
+    theme_bw() +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          plot.title = element_text(size=26),
+          axis.text.y = element_text(size=26),
+          legend.position = "bottom",
+          legend.title = element_text(size=16),
+          legend.text = element_text(size=16)) +
+    scale_colour_manual(name="Model & Scenario",
+                        breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
+                        labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050"),
+                        values = c("GCAM"="#e41a1c", "MESSAGEix-GLOBIOM"="#377eb8", "REMIND-MAgPIE"="#4daf4a", "IEA WEO 2021 Net2050"="#000000")) +
+    scale_fill_manual(name="Model & Scenario",
+                      breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
+                      labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050"),
+                      values = c("GCAM"="#e41a1cff", "MESSAGEix-GLOBIOM"="#377eb8ff", "REMIND-MAgPIE"="#4daf4aff", "IEA WEO 2021 Net2050"="#ffff33")) +
+    scale_shape_manual(name="Scenario",
+                       labels = c("NZE2050", "Net Zero 2050"),
+                       breaks = c("NZE2050", "Net Zero 2050"),
+                       values = c("NZE2050"=22, "Net Zero 2050"=21)) +
+    scale_x_discrete(name="", breaks=c("1 IPCC SR1.5", "2 IEA", "3 NGFS"), labels=c("IPCC SR1.5", "IEA", "NGFS")) +
+    xlab("") + ylab("") + ggtitle(i_title) +
+    guides(
+      colour=guide_legend(ncol=2, override.aes = list(fill = c("#e41a1c", "#377eb8", "#4daf4a", "#ffff99"), shape=c(21,21,21,22))),
+      fill=guide_legend(ncol=2),
+      shape="none")
+  # insert historical data as dashed line (assumes data is available in global scope)
+  hist_value <- filter(data, scenario == "historical", region== "World", period==2019, variable==histvar)
+  p <- p + geom_hline(yintercept=hist_value[[1,"value"]], linetype=2) +
+    annotate("text", x= 2030-0.5, y=hist_value[[1,"value"]], label="2019", vjust = -0.5)
+  return(p)
+}
+
+
 # wrapper function so only providing variable, and title and filename is enough to call function above and print files
+# assumes data is available in global scope
+# if histvar is given, historical value is plotted as dashed line instead of sr15 boxplot
 plot_default <- function(ivar,histvar=NULL,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1,fname,phase=2){
   tmp_sr15 <- data_sr15 %>%
     filter(period == iper,
@@ -706,13 +817,15 @@ plot_default <- function(ivar,histvar=NULL,iper=2050,irange=NULL,ititle="Compari
     tmp_title <- paste(ititle, "- Phase 3")
   }
   irange <- irange
-  p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title,irange)
-  # add horizontal line with recent historical values if historical variable name given
-  if (!is.null(histvar)) {
-    hist_value <- filter(data, scenario == "historical", region== "World", period==2019, variable==histvar)
-    p <- p + geom_hline(yintercept=hist_value[[1,"value"]], linetype=2)
-         # annotate("text", y=hist_value[[1,"value"]], label="2019")
+
+  # add horizontal line with recent historical values instead of sr15 box if historical variable name given
+  if (is.null(histvar)) {
+    p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange)
+  } else {
+    histvar <- histvar
+    p <- plot_comparison_ar6_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange, histvar)
   }
+
   if (phase == 2) {
     ggsave(paste0("plot_",fname,"_p2_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
   } else if (phase == 3) {
