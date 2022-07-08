@@ -86,7 +86,7 @@ library(quitte)
 library(mip)
 # NGFS specific
 library(vroom)
-#source("C://Users/pascalwe/Code/NGFS/remind2/inst/markdown/compareScenariosNGFS/plots_ngfs.R")
+source("C://Users/pascalwe/Code/NGFS/remind2/R/plotsNGFS.R")
 ```
 
 
@@ -151,13 +151,15 @@ data_p2 <- tmp_p2[, c("Model", "Scenario", "Region", "Variable", "Unit", paste(c
 
 rm(tmp, tmp_p2)
 
-# rename models
-models_p2_new <- c("GCAM_Ph2", "MSGE_Ph2", "RMND_Ph2")
-models_p3_new <- c("GCAM_Ph3", "MSGE_Ph3", "RMND_Ph3")
-
-for (m in 1:3) {
-  data_p2[data_p2$model == models_p2[m], "model"]    <- models_p2_new[m]
-  data_p3[data_p3$model == models_p3[m], "model"]    <- models_p3_new[m]
+# rename models except if only section 02 is present
+if (params$sections != 2) {
+  models_p2_new <- c("GCAM_Ph2", "MSGE_Ph2", "RMND_Ph2")
+  models_p3_new <- c("GCAM_Ph3", "MSGE_Ph3", "RMND_Ph3")
+  
+  for (m in 1:3) {
+    data_p2[data_p2$model == models_p2[m], "model"]    <- models_p2_new[m]
+    data_p3[data_p3$model == models_p3[m], "model"]    <- models_p3_new[m]
+  }
 }
 ```
 
@@ -216,7 +218,7 @@ data_p2[data_p2$scenario == "Divergent Net Zero", "scenario"] <- "d_rap"
 # Combine into one data frame and remove old.
 data_p3 <- bind_rows(data_p3, data_p2)
 data <- bind_rows(data_p3, data_hist)
-rm(data_p3, data_p2, data_hist)
+rm(data_p2, data_p3, data_hist)
 
 # In the variable names, replace |+|, |++|, |+++|, ... by |.
 data %>%
@@ -273,7 +275,7 @@ histRefModel <- c(
 
 ```{r prepare IEA net-zero data}
 # prepare IEA Data in case it is needed
-if (any(c(5,6) %in% params$sections)) {
+if (any(c(5,6,7) %in% params$sections)) {
   u_ngfs_scenario <- c("Net Zero 2050")  # TODO: this should be solved differently, either hardcode or make truly flexible
   tmstmp <- Sys.Date()
   

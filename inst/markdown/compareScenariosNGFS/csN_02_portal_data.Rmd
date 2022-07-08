@@ -1,0 +1,322 @@
+# Scenario Explorer Data
+
+Prepare data for the NGFS Portal and save to .csv files.
+
+## Header
+
+```{r File 1 - Header}
+# general problem - why are there 600.000 rows with scenario == NA in "data"? For now just deleted as it seems to be
+# duplicates.
+# TODO: find out what happened here.
+data <- data[!is.na(data$scenario),]
+
+# file content goal - from Jonas' README, translated to R and updated
+regions <- "World"
+models <- "REMIND-MAgPIE 3.0-4.4"
+years <- c(2005, 2010, 2015, 2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2070, 2080, 2090, 2100)
+scenarios <- c("o_1p5c", "d_rap", "d_delfrag", "o_2c", "h_ndc", "h_cpol")
+variables <- c(
+  "Capacity Additions|Electricity|Solar|PV",
+  "Emissions|CO2|Energy and Industrial Processes",
+  "Final Energy|Hydrogen",
+  "Investment|Energy Supply",
+  "Price|Carbon",
+  "Primary Energy|Oil",
+  "Diagnostics|Temperature|Global Mean|MAGICC7|MED"
+)
+
+new_mean_temp_name <- "AR6 climate diagnostics|Surface Temperature (GSAT)|MAGICCv7.5.3|50.0th Percentile"
+# data preparation from snapshot
+data_header <- data %>%
+  # data selection first, names partly not correct yet
+  select(-varplus) %>%
+  filter(region == regions,
+         model == models,
+         period %in% years,
+         scenario %in% scenarios,
+         variable %in% c(variables, new_mean_temp_name)) %>%
+  pivot_wider(names_from = period)
+  # mutate(variable = recode_factor(variable, "Diagnostics|Temperature|Global Mean|MAGICC7|MED" = new_mean_temp_name))
+
+# not sure how to do it using dplyr, so here is a less elegant version
+levels(data_header$variable) <- c(levels(data_header$variable), "Diagnostics|Temperature|Global Mean|MAGICC7|MED")
+data_header[data_header$variable == new_mean_temp_name, "variable"] <- "Diagnostics|Temperature|Global Mean|MAGICC7|MED"
+
+# test if number of variables checks out
+if (length(variables)*length(scenarios) != length(data_header$variable)) {
+  print("Number of variables doesn't check out!")
+}
+
+# write using semicolon as separator (decimals are done with ".")
+write.table(data_header, "data_for_header_wide_2022-07-07.csv", sep = ";", row.names = FALSE)
+```
+
+```{r File 2 - net-zero}
+scenarios <- c("o_1p5c", "d_rap", "d_delfrag", "o_2c", "h_ndc", "h_cpol")
+# is regular actually used?
+yearsRegular <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050) # , 2055, 2060, 2070, 2080, 2090, 2100
+yearsCDR <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050, 2055, 2060, 2070, 2080, 2090, 2100)
+models <- c("GCAM 5.3+ NGFS", "MESSAGEix-GLOBIOM 1.1-M-R12", "REMIND-MAgPIE 3.0-4.4")
+regions <- "World"
+wedges <- c(
+        "Secondary Energy|Electricity|Coal",
+        "Secondary Energy|Electricity|Oil",
+        "Secondary Energy|Electricity|Gas",
+        "Secondary Energy|Electricity|Nuclear",
+        "Secondary Energy|Electricity|Biomass",
+        "Secondary Energy|Electricity|Hydro",
+        "Secondary Energy|Electricity|Geothermal",
+        "Secondary Energy|Electricity|Solar",
+        "Secondary Energy|Electricity|Wind",
+
+        "Final Energy|Buildings|Electricity",
+        "Final Energy|Industry|Electricity",
+        "Final Energy|Transportation|Electricity",
+        "Final Energy|Buildings|Non Electricity",
+        "Final Energy|Industry|Non Electricity",
+        "Final Energy|Transportation|Non Electricity",
+
+        "Fuels|Gases from fossil fuels",
+        "Fuels|Hydrogen from fossil fuels",
+        "Fuels|Liquids from fossil fuels",
+        "Fuels|Solid coal",
+        "Fuels|Biogases",
+        "Fuels|Hydrogen from biomass and electricity",
+        "Fuels|Bioliquids",
+        "Fuels|Solid biomass",
+
+        "Energy intensity",
+        
+        "Emissions|CO2|AFOLU",
+
+        "CDR|Land Use",
+        "CDR|Bioenergy with CCS",
+        "CCS|Energy supply",
+        "CCS|Industrial energy demand",
+        "CCS|Industrial processes"
+        )
+
+# data preparation from snapshot
+data_nz <- data %>%
+  # data selection first, filter variables in the end as they are needed for calculations
+  select(-varplus) %>%
+  filter(region == regions,
+         model %in% models,
+         period %in% yearsCDR,
+         scenario %in% scenarios) %>%
+
+  # add "Final Energy|Buildings|Electricity"
+  rbind(data %>%
+          select(-varplus) %>%
+          filter(region == REGION, model %in% models, period %in% yearsCDR, scenario %in% scenarios) %>%
+          filter(variable == "Final Energy|Residential and Commercial|Electricity") %>%
+          mutate(variable = "Final Energy|Buildings|Electricity")) %>%
+  
+  # add "Final Energy|...|Non Electricity"
+  quitte::calc_addVariable(
+        "`Final Energy|Industry|Non Electricity`" = 
+          "`Final Energy|Industry|Hydrogen` + `Final Energy|Industry|Liquids` + `Final Energy|Industry|Gases` + 
+        `Final Energy|Industry|Heat` + `Final Energy|Industry|Solids`",
+        
+        "`Final Energy|Buildings|Non Electricity`" = "`Final Energy|Residential and Commercial|Hydrogen` + 
+        `Final Energy|Residential and Commercial|Liquids` + `Final Energy|Residential and Commercial|Gases` + 
+        `Final Energy|Residential and Commercial|Heat` + `Final Energy|Residential and Commercial|Solids`",
+        
+        "`Final Energy|Transportation|Non Electricity`" = "`Final Energy|Transportation|Hydrogen` + 
+        `Final Energy|Transportation|Liquids` + `Final Energy|Transportation|Gases`"
+      ) %>%
+  
+  # add "Fuels|..." (no w or w/o CCS?)
+  quitte::calc_addVariable(
+        "`Fuels|Hydrogen from biomass and electricity`" = 
+          "`Secondary Energy|Hydrogen|Biomass` + `Secondary Energy|Hydrogen|Electricity`",
+        
+        "`Fuels|Hydrogen from fossil fuels`" = 
+          "`Secondary Energy|Hydrogen|Gas` + `Secondary Energy|Hydrogen|Coal`",
+        
+        "`Fuels|Liquids from fossil fuels`" = 
+          "`Secondary Energy|Liquids|Coal` + `Secondary Energy|Liquids|Oil` + `Secondary Energy|Liquids|Gas`",
+        
+        "`Fuels|Gases from fossil fuels`" = 
+          "`Secondary Energy|Gases|Coal` + `Secondary Energy|Gases|Natural Gas`",
+        
+        "`Fuels|Biogases`"      = "`Secondary Energy|Gases|Biomass`",
+        "`Fuels|Bioliquids`"    = "`Secondary Energy|Liquids|Biomass`",
+        "`Fuels|Solid biomass`" = "`Secondary Energy|Solids|Biomass`",
+        "`Fuels|Solid coal`"    = "`Secondary Energy|Solids|Coal`",
+        
+        units = "EJ/yr"
+      ) %>%
+  
+  # add energy intensity (no efficiency?)
+  # units: EJ/billion US$ = 10^18/10^9 J/$ = 10^9 J/$
+  quitte::calc_addVariable("`Energy intensity`" = "`Final Energy`/`GDP|PPP` * 1e3", units = "MJ/$") %>%
+  
+  # add CDR variables (no Land Use|Afforestation?)
+  quitte::calc_addVariable(
+    "`CDR|Land Use`"                 = "`Carbon Sequestration|Land Use`",
+    "`CDR|Bioenergy with CCS`"       = "`Carbon Sequestration|CCS|Biomass`",
+    "`CCS|Energy supply`"            = "`Carbon Sequestration|CCS|Fossil|Energy|Supply`",
+    "`CCS|Industrial energy demand`" = "`Carbon Sequestration|CCS|Fossil|Energy|Demand|Industry`",
+    "`CCS|Industrial processes`"     = "`Carbon Sequestration|CCS|Industrial Processes`"
+  ) %>%
+  
+  # finally remove all unnecessary variables
+  filter(variable %in% wedges)
+
+# write using semicolon as separator (decimals are done with ".")
+write.table(data_nz, "scenario_data_2022-07-07.csv", sep = ";", row.names = FALSE)
+```
+
+
+```{r File 3 - transition data}
+# just REMIND? for now all models added as REMIND is missing diagnostic variables
+# was "cost" instead of "costs"
+scenarios <- c("h_cpol", "o_1p5c")
+years <- c(2020, 2025, 2030, 2035, 2040, 2045, 2050) 
+models <- c("GCAM 5.3+ NGFS", "MESSAGEix-GLOBIOM 1.1-M-R12", "REMIND-MAgPIE 3.0-4.4")
+regions <- "World"
+variables <- c("CO2 emissions costs", 
+              "Fossil fuels revenues", 
+              "Buildings energy costs", 
+              "Low-carbon electricity investments")
+
+# data preparation from snapshot
+data_tr <- data %>%
+  # data selection first, filter variables in the end as they are needed for calculations
+  select(-varplus) %>%
+  filter(region == regions,
+         model %in% models,
+         period %in% years,
+         scenario %in% scenarios) %>%
+  
+  # add total CO2 emissions costs [10^-6 * $/t * Mt => 10^12 $]
+  quitte::calc_addVariable(
+      "`CO2 emissions costs`" = c("1e-6*`Price|Carbon`*`Emissions|CO2`", "trillion US$")) %>%
+  
+  # add fossil fuels revenues [US$/GJ * EJ/yr -> million US$ / yr]
+  quitte::calc_addVariable(
+      "`Fossil fuels revenues`" = c("1e-3*(`Price|Primary Energy|Coal` * `Primary Energy|Coal` + 
+                                           `Price|Primary Energy|Oil`  * `Primary Energy|Oil`  + 
+                                           `Price|Primary Energy|Gas`  * `Primary Energy|Gas`)",
+        "trillion US$")) %>%
+  
+  # add Buildings energy costs [US$/GJ * EJ/yr -> million US$ / yr]
+  quitte::calc_addVariable(
+      "`Buildings energy costs`" = c(
+        "1e-3*(`Final Energy|Residential and Commercial|Electricity` * 
+        `Price|Final Energy|Residential and Commercial|Residential|Electricity` + 
+        `Final Energy|Residential and Commercial|Gases` * 
+        `Price|Final Energy|Residential and Commercial|Residential|Gases|Natural Gas`)",
+    "trillion US$")) %>%
+  
+  # add low carbon electricity investments [US$/tCO2 * MtCO2/yr -> million US$ / yr]
+  # only available for MESSAGE as other models don't have this diagnostic variable
+  quitte::calc_addVariable(
+      "`Low-carbon electricity investments`" = c("1e-3*`Diagnostics|Investment|Energy Supply|Electricity|Low Carbon`",
+      "trillion US$")) %>%
+  
+  # finally remove all unnecessary variables
+  filter(variable %in% variables)
+
+# write using semicolon as separator (decimals are done with ".")
+write.table(data_tr, "use_scenario_transition_data_2022-07-07.csv", sep = ";", row.names = FALSE)
+```
+
+```{r File 4 - temperature ranges}
+# which percentiles were used before for "Lower", "Upper"? Should the variable names maybe contain the percentiles?
+# -> looks like 5 and 95 although there is a very small variation from phase 2 data (v2.2)
+# -> which model will CA use for the CIE? For now assuming MESSAGE:
+scenarios <- c("h_cpol")
+years <- c(2020:2100) 
+models <- c("MESSAGEix-GLOBIOM 1.1-M-R12")
+regions <- "World"
+variables <- c("Median", "Lower", "Upper")
+
+# reload data from snapshot to get all years
+tmp <- vroom(snapshot_regi)
+data_temp <- tmp[, c("Model", "Scenario", "Region", "Variable", "Unit", years)] %>%
+  rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+  filter(model %in% models,
+         region == regions,
+         scenario %in% scenarios) %>%
+  # transform to long form to be able to use "calc_addVariable()"
+  pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>%
+  
+  # add temperature variables
+  quitte::calc_addVariable(
+    "`Median`" = 
+      "`AR6 climate diagnostics|Surface Temperature (GSAT)|MAGICCv7.5.3|50.0th Percentile`",
+    "`Lower`" = 
+      "`AR6 climate diagnostics|Surface Temperature (GSAT)|MAGICCv7.5.3|5.0th Percentile`",
+    "`Upper`" = 
+      "`AR6 climate diagnostics|Surface Temperature (GSAT)|MAGICCv7.5.3|95.0th Percentile`"
+  ) %>%
+  
+  # finally remove all unnecessary variables
+  filter(variable %in% variables) %>%
+  select(-unit) %>%  # unit doesn't seem to be needed
+  pivot_wider(names_from = period)
+
+# write using semicolon as separator (decimals are done with ".")
+write.table(data_temp, "temperature_with_ranges_2022-07-07.csv", sep = ";", row.names = FALSE)
+
+```
+
+
+```{r File 8 - macro economics}
+# does it make sense to follow the former file format? .json looks the same, snapshot has the same format
+# -> ask Jonas
+# -> Christoph proposes to use GCAM input to NiGEM
+
+years <- c(2022:2050)  # one year later - one year less
+variables <- c("World GDP",
+               "Inflation rate in Europe",
+               "Unemployment in China",
+               "Equity Prices in the USA")
+scenarios <- c("ndc", "net-zero")
+models <- "NiGEM NGFS v1.22"
+regions <- c("NiGEM NGFS v1.22|World", "NiGEM NGFS v1.22|Europe", 
+             "NiGEM NGFS v1.22|China", "NiGEM NGFS v1.22|United States")
+
+# load snapshot containing only NiGEM data
+tmp <- vroom("C:\\Users\\pascalwe\\Data\\NGFS\\phase3\\1657272931478-snapshot-624\\output\\snapshot_all_regions.csv")
+# first selection and renaming all relevant variables for all relevant regions
+data_prel <- rbind(tmp[, c("Model", "Scenario", "Region", "Variable", "Unit", years)] %>%
+  rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+  filter(model %in% models,
+         region %in% regions,
+         scenario == "h_ndc(GCAM5.3_NGFS inputs)") %>%
+  mutate(scenario = "h_ndc"),
+  tmp[, c("Model", "Scenario", "Region", "Variable", "Unit", years)] %>%
+  rename(model=Model, scenario=Scenario, region=Region, variable=Variable, unit=Unit) %>%
+  filter(model %in% models,
+         region %in% regions,
+         scenario == "o_1p5c(GCAM5.3_NGFS inputs)") %>%
+  mutate(scenario = "o_1p5c")) %>%
+  pivot_longer(names_to="period", values_to="value", c(-model, -scenario, -region, -variable, -unit)) %>%
+  mutate(region = ifelse(region == regions[1], "World", region)) %>%
+  mutate(region = ifelse(region == regions[2], "Europe", region)) %>%
+  mutate(region = ifelse(region == regions[3], "China", region)) %>%
+  mutate(region = ifelse(region == regions[4], "USA", region)) %>%
+  
+  # add variables
+    quitte::calc_addVariable(
+    "`World GDP`"                 = "`NiGEM|Gross Domestic Product (GDP)|final scenario`",
+    "`Inflation rate in Europe`"  = "`NiGEM|Inflation rate; %|final scenario`",
+    "`Unemployment in China`"     = "`NiGEM|Unemployment rate; %|final scenario`",
+    "`Equity Prices in the USA`"  = "`NiGEM|Equity prices|final scenario`"
+  ) %>%
+  filter(variable %in% variables) %>%
+  select(-unit)
+
+# select only the meaningful region-variable combinations
+data_macro <- rbind(
+  filter(data_prel, region == "World",  variable == variables[1]),
+  filter(data_prel, region == "Europe", variable == variables[2]),
+  filter(data_prel, region == "China",  variable == variables[3]),
+  filter(data_prel, region == "USA",    variable == variables[4])
+)
+
+write.table(data_macro, "macro-economic_variables_2022-07-07.csv", sep = ";", row.names = FALSE)
+```
