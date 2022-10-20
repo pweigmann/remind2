@@ -1,5 +1,5 @@
 # Load utils functions from mip package which don't get exported
-
+# funktionen per mip::: nutzen
 attach(getNamespace("mip"))
 
 
@@ -45,8 +45,6 @@ attach(getNamespace("mip"))
 #' @importFrom ggplot2 ggplot aes_ geom_point scale_color_hue element_line aes_string geom_vline geom_hline geom_text %+replace% scale_color_manual ggtitle theme_bw scale_alpha_manual coord_cartesian
 #' margin element_rect ggplot_gtable ggplot_build scale_y_log10 coord_trans expand_limits guide_axis scale_x_continuous
 #' @export
-#'
-
 mipLineHistorical_NGFS <- function(x,x_hist=NULL,color.dim="moscen",linetype.dim=NULL,facet.dim="region",funnel.dim=NULL,
                               ylab=NULL,xlab="Year",title=NULL,color.dim.name="Model output",ybreaks=NULL,ylim=0,
                               ylog=NULL, size=14, scales="fixed", leg.proj=FALSE, plot.priority=c("x","x_hist","x_proj"),
@@ -528,6 +526,7 @@ showLinePlots_NGFS <- function(
 
 # IEA Net-Zero Comparison Plots
 # plots sr15 and ar6 data as boxplots, and IEA and NGFS data as points on top
+#' @export
 plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i_data_ar6,
                                           i_title, yrange=NULL) {
   # get statistical information on data
@@ -679,8 +678,9 @@ plot_comparison_sr15_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, 
 }
 
 # plots ar6 data as boxplots, and IEA and NGFS data as points on top
+#' @export
 plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i_data_ar6,
-                                          i_title, yrange=NULL, histvar=NULL, ifac=1) {
+                                          i_title, yrange=NULL, histvar=NULL, histyear=2019, ifac=1) {
   # get statistical information on data
   tmp_ar6_stats <- i_data_ar6 %>%
     group_by(period) %>%
@@ -750,12 +750,21 @@ plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i
     # add coordinate system based on yrange
     p <- p +
       scale_y_continuous(expand=c(0,0)) +
-      coord_cartesian(ylim = yrange, clip = "off")
+      coord_cartesian(xlim=c(tmp_ar6_stats$period-0.2, tmp_ar6_stats$period+1), ylim = yrange, clip = "off")
 
+  # no range given
   } else {
     p <- p +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=min, yend=p25),
+                   data = tmp_ar6_stats,
+                   col="#ffa089")
+    p <- p +
+      geom_segment(aes(x=period+0.5, xend=period+0.5, y=p75, yend=max),
+                   data = tmp_ar6_stats,
+                   col="#ffa089")
+    p <- p +
       scale_y_continuous(expand=c(0, 0)) +
-      coord_cartesian(clip = "off")
+      coord_cartesian(xlim=c(tmp_ar6_stats$period-0.2, tmp_ar6_stats$period+1), clip = "off")
   }
 
   p <- p +
@@ -771,27 +780,31 @@ plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i
           legend.title = element_text(size=16),
           legend.text = element_text(size=16)) +
     scale_colour_manual(name="Model & Scenario",
-                        breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
-                        labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050"),
-                        values = c("GCAM"="#e41a1c", "MESSAGEix-GLOBIOM"="#377eb8", "REMIND-MAgPIE"="#4daf4a", "IEA WEO 2021 Net2050"="#000000")) +
+                        breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050", "AR6"),
+                        labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050", "AR6"),
+                        values = c("GCAM"="#e41a1c", "MESSAGEix-GLOBIOM"="#377eb8", "REMIND-MAgPIE"="#4daf4a", "IEA WEO 2021 Net2050"="#000000", "AR6"="#ffa089")) +
     scale_fill_manual(name="Model & Scenario",
-                      breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050"),
-                      labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050"),
-                      values = c("GCAM"="#e41a1cff", "MESSAGEix-GLOBIOM"="#377eb8ff", "REMIND-MAgPIE"="#4daf4aff", "IEA WEO 2021 Net2050"="#ffff33")) +
+                      breaks = c("GCAM", "MESSAGEix-GLOBIOM", "REMIND-MAgPIE", "IEA WEO 2021 Net2050", "AR6"),
+                      labels = c("GCAM - Net Zero 2050", "MESSAGEix-GLOBIOM - Net Zero 2050", "REMIND-MAgPIE - Net Zero 2050", "IEA - NZE2050", "AR6"),
+                      values = c("GCAM"="#e41a1cff", "MESSAGEix-GLOBIOM"="#377eb8ff", "REMIND-MAgPIE"="#4daf4aff", "IEA WEO 2021 Net2050"="#ffff99", "AR6"="#ffcba4")) +
     scale_shape_manual(name="Scenario",
-                       labels = c("NZE2050", "Net Zero 2050"),
-                       breaks = c("NZE2050", "Net Zero 2050"),
-                       values = c("NZE2050"=22, "Net Zero 2050"=21)) +
-    scale_x_discrete(name="", breaks=c("1 IPCC SR1.5", "2 IEA", "3 NGFS"), labels=c("IPCC SR1.5", "IEA", "NGFS")) +
+                       labels = c("NZE2050", "Net Zero 2050", "AR6"),
+                       breaks = c("NZE2050", "Net Zero 2050", "AR6"),
+                       values = c("NZE2050"=22, "Net Zero 2050"=21, "AR6"=22)) +
+    scale_x_discrete(name="", breaks=c("1 IPCC SR1.5", "2 IEA", "3 NGFS", "4 AR6"), labels=c("IPCC SR1.5", "IEA", "NGFS", "AR6")) +
     xlab("") + ylab("") + ggtitle(i_title) +
     guides(
-      colour=guide_legend(ncol=2, override.aes = list(fill = c("#e41a1c", "#377eb8", "#4daf4a", "#ffff99"), shape=c(21,21,21,22))),
-      fill=guide_legend(ncol=2),
+      colour=guide_legend(ncol=2, override.aes = list(fill = c("#e41a1c", "#377eb8", "#4daf4a", "#ffff99", "#ffcba4"), shape=c(21,21,21,22,22))),
+      #fill=guide_legend(ncol=2),
       shape="none")
+
   # insert historical data as dashed line (assumes data is available in global scope)
-  hist_value <- filter(data, scenario == "historical", region== "World", period==2019, variable==histvar)
-  p <- p + geom_hline(yintercept=hist_value[[1,"value"]]*ifac, linetype=2) +
-    annotate("text", x= 2030-0.5, y=hist_value[[1,"value"]]*ifac, label="2019", vjust = -0.5)
+  if (!is.null(histvar)) {
+    hist_value <- filter(data, scenario == "historical", region== "World", period==histyear, variable==histvar)
+    p <- p + geom_hline(yintercept=hist_value[[1,"value"]]*ifac, linetype=2) +
+      annotate("text", x= tmp_ar6_stats$period-0.1, y=hist_value[[1,"value"]]*ifac, label=as.character(histyear),
+               vjust = -0.5, size = 8)
+  }
   return(p)
 }
 
@@ -799,7 +812,9 @@ plot_comparison_ar6_ngfs_iea <- function(i_data_sr15, i_data_ngfs, i_data_iea, i
 # wrapper function so only providing variable, and title and filename is enough to call function above and print files
 # assumes data is available in global scope
 # if histvar is given, historical value is plotted as dashed line instead of sr15 boxplot
-plot_default <- function(ivar,histvar=NULL,iper=2050,irange=NULL,ititle="Comparison plot",ifac=1,fname,phase=2){
+#' @export
+plot_default <- function(ivar, iper=2050, irange=NULL, ititle="Comparison plot", ifac=1,
+                         fname, phase=2, sr15=TRUE, histvar=NULL, histyear=2019){
   tmp_sr15 <- data_sr15 %>%
     filter(period == iper,
            variable == ivar,
@@ -828,19 +843,23 @@ plot_default <- function(ivar,histvar=NULL,iper=2050,irange=NULL,ititle="Compari
   }
   irange <- irange
   ifac <- ifac
+  tmp_title <- ""
+
   # add horizontal line with recent historical values instead of sr15 box if historical variable name given
-  if (is.null(histvar)) {
+  if (sr15) {
     p <- plot_comparison_sr15_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange)
   } else {
     histvar <- histvar
-    p <- plot_comparison_ar6_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange, histvar, ifac)
+    histyear <- histyear
+    p <- plot_comparison_ar6_ngfs_iea(tmp_sr15, tmp_ngfs, tmp_iea, tmp_ar6, tmp_title, irange, histvar, histyear, ifac)
   }
 
+  filetype = "pdf"
   if (phase == 2) {
-    ggsave(paste0("plot_",fname,"_p2_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
+    ggsave(paste0("plot_",fname,"_p2_",tmstmp,".",filetype), p + theme(legend.position = "none"), width = 10, height = 10)
   } else if (phase == 3) {
-    ggsave(paste0("plot_",fname,"_p3_",tmstmp,".png"), p + theme(legend.position = "none"), width = 10, height = 10)
+    ggsave(paste0("plot_",fname,"_p3_",tmstmp,".",filetype), p + theme(legend.position = "none",
+                                                                       plot.margin = margin(r=30, b=20)), width = 10, height = 10)
   }
   return(p)
 }
-

@@ -86,7 +86,7 @@ library(quitte)
 library(mip)
 # NGFS specific
 library(vroom)
-source("C://Users/pascalwe/Code/NGFS/remind2/R/plotsNGFS.R")
+#source("C://Users/pascalwe/Code/NGFS/remind2/R/plotsNGFS.R")
 ```
 
 

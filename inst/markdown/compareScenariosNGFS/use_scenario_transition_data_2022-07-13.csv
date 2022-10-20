@@ -1,0 +1,155 @@
+"model";"scenario";"region";"variable";"unit";"period";"value"
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2020;0
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2025;0
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2030;0
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2035;0
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2040;0
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2045;0
+"GCAM 5.3+ NGFS";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2050;0
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2020;0
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2025;2.22058255614537
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2030;2.69340961142578
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2035;2.62349379355602
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2040;2.25120050044097
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2045;1.89175045805092
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2050;-0.184875146034624
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2020;0.0536755046977982
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2025;0.0273884183311236
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2030;0.0135219930209167
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2035;0.0596691544963314
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2040;0.109081604645798
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2045;0.161501666351886
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2050;0.215067735950691
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2020;0.0536755046977982
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2025;7.13433450693427
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2030;6.2091541688076
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2035;5.1428547239796
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2040;4.80106204804779
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2045;4.35831956021201
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2050;3.58152555893652
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2020;0.41348728631952
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2025;0.26472712635544
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2030;0.25162422168222
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2035;0.24407742598218
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2040;0.24534128740046
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2045;0.2572172645514
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"CO2 emissions costs";"trillion US$";2050;0.27497039994126
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2020;0.41348728631952
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2025;2.6167633175683
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2030;2.6833414238408
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2035;2.75964970889088
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2040;2.2844975518589
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2045;1.69772962370292
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"CO2 emissions costs";"trillion US$";2050;1.07915350972688
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2020;3.99980072615368
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2025;4.0875234191602
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2030;4.11525675698823
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2035;4.12686785740815
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2040;4.19459983140202
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2045;4.26126450078216
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2050;4.30569468398307
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2020;3.98263062187016
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2025;3.78466942945572
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2030;3.64517738784943
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2035;3.3845031445197
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2040;3.17379848126701
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2045;2.92094712201016
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2050;2.3810079839124
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2020;1.51560207565404
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2025;1.80532111181511
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2030;1.96619275403309
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2035;2.31980741149411
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2040;2.62355588616613
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2045;2.83594891693575
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2050;3.21662268631867
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2020;1.51560207565404
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2025;1.59160935392025
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2030;1.18920599487504
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2035;1.31673004268867
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2040;1.33475794925437
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2045;1.43733271205919
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2050;1.42926949115443
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2020;3.01549073779
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2025;3.5081078028
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2030;3.88706011287
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2035;3.91796720966
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2040;4.16667577018
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2045;4.29790000459
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Fossil fuels revenues";"trillion US$";2050;4.5308824585
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2020;3.01549073779
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2025;3.02182053738
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2030;2.805803321
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2035;2.28584281582
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2040;1.9402076031
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2045;1.71837422517
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Fossil fuels revenues";"trillion US$";2050;1.60275327458
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2020;2.14510282530513
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2025;2.38787610662781
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2030;2.63922337133767
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2035;2.91544010876379
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2040;3.19544082328381
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2045;3.45876087742975
+"GCAM 5.3+ NGFS";"h_cpol";"World";"Buildings energy costs";"trillion US$";2050;3.69408532958131
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2020;2.10770604749186
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2025;2.50339528101192
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2030;2.89456097980768
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2035;3.36558402016342
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2040;3.82332487956424
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2045;4.41514633050845
+"GCAM 5.3+ NGFS";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2050;5.03579386438597
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2020;1.5224316473667
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2025;1.38833546583992
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2030;1.64082169030355
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2035;1.87925048573054
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2040;2.02686509262267
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2045;2.23435451536559
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Buildings energy costs";"trillion US$";2050;2.50442680042137
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2020;1.5224316473667
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2025;4.33188804345403
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2030;4.00946260180233
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2035;3.51273002214172
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2040;3.29530373342598
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2045;3.6191237787261
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2050;3.83096249896426
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2020;1.01713103205
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2025;1.50420430004
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2030;2.31164580963
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2035;2.5084742776
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2040;2.43611698365
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2045;2.433076255
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Buildings energy costs";"trillion US$";2050;2.58706719958
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2020;1.276293912
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2025;2.02930769244
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2030;2.8689204177
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2035;2.78303358839
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2040;2.52541352487
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2045;2.38338859454
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Buildings energy costs";"trillion US$";2050;2.47888350908
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2020;0.750162371947419
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2025;0.406004326011421
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2030;0.518500268290871
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2035;0.697859004063854
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2040;0.858465574228347
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2045;1.00818630011004
+"MESSAGEix-GLOBIOM 1.1-M-R12";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2050;0.924414301445748
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2020;0.750162371947419
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2025;1.45491566351592
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2030;2.32921501135749
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2035;1.92666108305315
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2040;1.84257383409922
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2045;1.93811702407686
+"MESSAGEix-GLOBIOM 1.1-M-R12";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2050;1.71030432139717
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2020;0.8110221
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2025;1.0947161
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2030;1.4365029
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2035;1.3912491
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2040;1.2973777
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2045;1.2936799
+"REMIND-MAgPIE 3.0-4.4";"h_cpol";"World";"Low-carbon electricity investments";"trillion US$";2050;1.4834556
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2020;0.8110221
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2025;1.8896267
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2030;2.569468
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2035;1.9406982
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2040;1.6950845
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2045;1.4299304
+"REMIND-MAgPIE 3.0-4.4";"o_1p5c";"World";"Low-carbon electricity investments";"trillion US$";2050;1.711474

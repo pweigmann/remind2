@@ -2,6 +2,9 @@
 
 Prepare data for the NGFS Portal and save to .csv files.
 
+!Attention! In the current form it only works if csN is called with 02_portal_data.Rmd being the only module in use.
+Don't combine 02 with other .Rmd modules.
+
 ## Header
 
 ```{r File 1 - Header}
@@ -108,7 +111,7 @@ data_nz <- data %>%
   # add "Final Energy|Buildings|Electricity"
   rbind(data %>%
           select(-varplus) %>%
-          filter(region == REGION, model %in% models, period %in% yearsCDR, scenario %in% scenarios) %>%
+          filter(region == regions, model %in% models, period %in% yearsCDR, scenario %in% scenarios) %>%
           filter(variable == "Final Energy|Residential and Commercial|Electricity") %>%
           mutate(variable = "Final Energy|Buildings|Electricity")) %>%
   
@@ -118,9 +121,8 @@ data_nz <- data %>%
           "`Final Energy|Industry|Hydrogen` + `Final Energy|Industry|Liquids` + `Final Energy|Industry|Gases` + 
         `Final Energy|Industry|Heat` + `Final Energy|Industry|Solids`",
         
-        "`Final Energy|Buildings|Non Electricity`" = "`Final Energy|Residential and Commercial|Hydrogen` + 
-        `Final Energy|Residential and Commercial|Liquids` + `Final Energy|Residential and Commercial|Gases` + 
-        `Final Energy|Residential and Commercial|Heat` + `Final Energy|Residential and Commercial|Solids`",
+        "`Final Energy|Buildings|Non Electricity`" = "`Final Energy|Residential and Commercial` - 
+        `Final Energy|Buildings|Electricity`",
         
         "`Final Energy|Transportation|Non Electricity`" = "`Final Energy|Transportation|Hydrogen` + 
         `Final Energy|Transportation|Liquids` + `Final Energy|Transportation|Gases`"
@@ -218,6 +220,34 @@ data_tr <- data %>%
   
   # finally remove all unnecessary variables
   filter(variable %in% variables)
+
+# manually calculate low carbon electricity investments for REMIND
+low_carbon_vars <- c("Investment|Energy Supply|Electricity|Nuclear",
+                     "Investment|Energy Supply|Electricity|Biomass",
+                     "Investment|Energy Supply|Electricity|Solar",
+                     "Investment|Energy Supply|Electricity|Wind",
+                     "Investment|Energy Supply|Electricity|Hydro",
+                     "Investment|Energy Supply|Electricity|Geothermal",
+                     "Investment|Energy Supply|Electricity|Transmission and Distribution")
+data_tr2 <- data %>%
+  select(-varplus) %>%
+  filter(model == "REMIND-MAgPIE 3.0-4.4",
+         region == regions,
+         period %in% years,
+         scenario %in% scenarios,
+         variable %in% low_carbon_vars) %>%
+  quitte::calc_addVariable(
+    "`Low-carbon electricity investments`" = c("1e-3*(`Investment|Energy Supply|Electricity|Nuclear` +
+                                                `Investment|Energy Supply|Electricity|Biomass` +
+                                                `Investment|Energy Supply|Electricity|Solar` +
+                                                `Investment|Energy Supply|Electricity|Wind` +
+                                                `Investment|Energy Supply|Electricity|Hydro` +
+                                                `Investment|Energy Supply|Electricity|Geothermal` +
+                                                `Investment|Energy Supply|Electricity|Transmission and Distribution`)",
+                                               "trillion US$")) %>%
+  filter(variable == "Low-carbon electricity investments")
+
+data_tr <- rbind(data_tr, data_tr2)
 
 # write using semicolon as separator (decimals are done with ".")
 write.table(data_tr, "use_scenario_transition_data_2022-07-07.csv", sep = ";", row.names = FALSE)
@@ -318,5 +348,5 @@ data_macro <- rbind(
   filter(data_prel, region == "USA",    variable == variables[4])
 )
 
-write.table(data_macro, "macro-economic_variables_2022-07-07.csv", sep = ";", row.names = FALSE)
+write.table(data_macro, "macro-economic_variables_2022-28-09.csv", sep = ";", row.names = FALSE)
 ```
