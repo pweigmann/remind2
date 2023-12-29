@@ -3,8 +3,9 @@ title: "validateScenarios"
 author: "Pascal Weigmann"
 date: "2023-12-12"
 output:
-  html_document: default
-  pdf_document: default
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, echo=FALSE, message = FALSE, warning = FALSE}
@@ -19,21 +20,101 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 
-# TODO
+### TODO
 DATA
- - data preparation depending on needed data
- - other categories
- - averaging, quick overview
- - support missing yellow/only min or max thresholds
+
+ - [ ] robust data preparation for all kinds of config
+ - [ ] categories 2, 4
+ - [ ] averaging, quick overview
+ - [ ] support missing yellow/only min or max thresholds
+ - [ ] return data instead of plots
+ - [ ] refactor to functions
+ - [ ] avoid errors in case config refers to unavailable data, skip instead
+
+
 PLOT
- - ordering of scenarios, years, regions
- - grouping of regions (currently causes layout problems)
- - detailed plots
+
+ - [ ] ordering of scenarios, years, regions
+ - [ ] grouping of regions (currently causes layout problems)
+ - [ ] detailed plots
+ - [ ] clean interactive plot layout
 
 
+### How-To validateScenario
+
+**Cornerstones**
+
+- input: one or multiple `REMIND_generic.mif`, one `historical.mif` and 
+         one `validationConfig.csv`
+- output: `validateScenarios.html`, an interactive Notebook
+- output: data frame containing the information which elements failed or passed
+
+**HTML Notebook**
+
+- one plot per variable
+- interactive plot gives all meta information that is necessary to understand
+  why specific traffic light color is chosen
+
+#### General Config Rules
+
+- each set of thresholds (one value for each `min/max_yel/red`) gets one line 
+  in the config
+- later rows overwrite earlier rows (e.g. specifying a region after setting 
+  thresholds for the same variable/time/scenario in all regions before)
+
+columns `region`, `scenario` and `period`
+
+- empty cells mean "all"
+- enter one or multiple entries, separated by `,` (multiple not yet supported)
+
+column `variable`
+
+- cannot be empty
+- only one entry allowed
+
+#### Category Definitions
+
+**Category 1: comparison to reference values**
+
+Evaluate whether results deviate from a reference source 
+(e.g. from historical.mif).
+
+Relative deviation is defined as `abs(run_value - ref_value)/ref_value`.
+
+required:
+
+- `metric`: `absolute` (not supported yet) or `relative` (default)
+- `max_red`: define strong threshold, enter desired value 
+             (decimal for `relative`, e.g. `0.1` for `10%`)
+
+optional:
+
+- `ref_model`: specify one or multiple sources from the historical.mif the data 
+               should be compared to. If empty, all available sources are used.
+               If more than one source is chosen, their *mean* is used as 
+               reference.
+- `max_yel`: define a weaker threshold, otherwise same as `max_red`
+
+**Category 2**
+
+**Category 3**
 
 
-# Import Data
+required:
+
+- `metric`: `absolute` (default) or `relative` (not supported yet)
+- `max_red`: define strong threshold, enter desired value
+
+optional:
+
+- `min_red`: define a strong lower threshold, otherwise same as `max_red` (currently required)
+- `min_yel`: define a weaker lower threshold, otherwise same as `max_red` (currently required)
+- `max_yel`: define a weaker upper threshold, otherwise same as `max_red` (currently required)
+
+**Category 4**
+
+
+### Import Data
 
 For now: one or multiple ``REMIND_generic.mif`` + ``historical.mif``
 
@@ -41,9 +122,24 @@ In the future potentially: support ``quitte`` or ``fulldata.gdx``
 
 ```{r, cache = TRUE}
 # from /p/tmp/pascalwe/ariadne/production/remind_23-09-28_ap_polishing_tech
-data <- remind2::deletePlus(quitte::read.quitte(c("REMIND_generic_Bal.mif",
+if (file.exists("mif.rds")) {
+  data <- readRDS("mif.rds")
+} else {
+  data <- remind2::deletePlus(quitte::read.quitte(c("REMIND_generic_Bal.mif",
                                                   "REMIND_generic_NPi.mif")))
-hist <- quitte::read.quitte("historical.mif")
+  saveRDS(data, "mif.rds")
+}
+
+if (file.exists("hist.rds")) {
+  hist <- readRDS("hist.rds")
+} else {
+  hist <- quitte::read.quitte("historical.mif")
+  saveRDS(hist, "hist.rds")
+}
+
+#data <- remind2::deletePlus(quitte::read.quitte(c("REMIND_generic_Bal.mif",
+#                                                  "REMIND_generic_NPi.mif")))
+#hist <- quitte::read.quitte("historical.mif")
 head(data)
 ```
 
@@ -54,27 +150,31 @@ cfg <- read.csv2("validationConfig.csv", na.strings = "") %>%
 
 head(cfg)
 ```
-# Engineer Data
+### Engineer Data
 
 ```{r}
-# full dimensions
-all_reg <- unique(data$region)
-all_per <- unique(data$period)
-all_sce <- unique(data$scenario)
+# dimensions of data
 by <- c("variable", "region", "period", "scenario")
 
-# additional dimension slices
+# full dimensions and important slices
+all_reg <- unique(data$region)
+all_per <- unique(data$period)  # not a factor, convert?
+all_per <- all_per[all_per <= 2100]
 hist_per <- c(2005, 2010, 2015, 2020)
+all_sce <- unique(data$scenario)
 
-# colors
-colors <- c(green = "#008450", yellow = "#EFB700", red = "#B81D13")
+# revert the sorting of factors for better plots
+# data$region <- factor(data$region, levels = rev(levels(data$region)))
+
+# define colors here or later
+colors <- c(green = "#008450", yellow = "#EFB700", red = "#B81D13", grey = "#808080")
 ```
 
-## Cat1, Filter Data
+#### Cat1, Filter Data
 
 Category 1: deviation to historical reference
-- metric: absolute, relative
-- ref_model:
+
+- [ ] metric: absolute, relative
 
 ```{r}
 # category 1
@@ -86,128 +186,123 @@ for (i in 1:nrow(c1)) {
   # create filters
   # check whether regions, periods, scenarios are specified
   # TODO: extend to support excluding elements, multiple elements
-  reg <- if (is.na(c1[i, "region"]))   all_reg else c1[i, "region"]
-  per <- if (is.na(c1[i, "period"]))  hist_per else c1[i, "period"]
-  sce <- if (is.na(c1[i, "scenario"])) all_sce else c1[i, "scenario"]
+  reg <- if (is.na(c1[i, "region"]))   all_reg else strsplit(c1[i, "region"], split = ", |,")[[1]]
+  per <- if (is.na(c1[i, "period"]))  hist_per else strsplit(as.character(c1[i, "period"]), split = ", |,")[[1]]
+  sce <- if (is.na(c1[i, "scenario"])) all_sce else strsplit(c1[i, "scenario"], split = ", |, ")[[1]]
   
   # filter data for each row in cfg
-  # run data for line i
+  # REMIND data for line i
   d <- data %>% 
   filter(variable == c1[i, "variable"], 
          region %in% reg,
          period %in% per,
          scenario %in% sce)
-  
-  # config data for line i
-  c <- select(c1[i,], 
-              c(variable, region, period, scenario, 
-                min_red, min_yel, max_yel, max_red, ref_model))
+  # here?: skip if empty
   
   # historical data for line i
   h <- hist %>% 
   filter(variable == c1[i, "variable"], 
          region %in% reg,
          period %in% per) %>%
-    mutate(ref_value = value) %>%
-    select(-c("scenario", "unit", "value"))
+    mutate(ref_value = value, ref_model = model) %>%
+    select(-c("scenario", "unit", "value", "model"))
   # remove NA here?
 
-  
   # in case one or more sources are specified, filter for them
-  if (!is.na(c$ref_model)) {
-    h <- filter(h, model %in% strsplit(c$ref_model, split = ", ")[[1]])
+  if (!is.na(c1[i, "ref_model"])) {
+    h <- filter(h, ref_model %in% strsplit(c1[i, "ref_model"], split = ", |,")[[1]])
   }
   
-  # in case of multiple sources, calculate mean
-  # TODO: support multiple regions
-  if (length(unique(h$model)) > 1) {
-    h_mean <- group_by(h, period) %>% 
-      summarize(ref_value = mean(ref_value))
-    h <- h_mean %>% 
-      mutate(region = c$region, 
-             variable = c$variable)
+  # in case of multiple sources, calculate mean (using all available sources)
+  if (length(unique(h$ref_model)) > 1) {
+    h_mean <- group_by(h, period, region) %>% 
+      summarise(ref_value = mean(ref_value, na.rm = TRUE))
+    h <- mutate(h_mean, variable = c1[i, "variable"], ref_model = "multiple")
   }
   
-  
-  # Merge data
-  # remove column names that have "NA" in cfg as they will not be used for merge
-  # problem: different columns cause problems when combining data frames
-  c <- c[ ,!is.na(c)]
-  merge_cols <- colnames(c)[colnames(c) %in% by]
-  
-  # combine mif and cfg data
-  d <- merge(d, c, by = merge_cols)
-  
-  # combine with historical values
-  d <- merge(d, h,
-             by.x = c(merge_cols,"period", "ref_model"), 
-             by.y = c(merge_cols,"period", "model")) %>%
-    mutate(ref_value = value.y, value = value.x) %>%
-    select(-c(value.x, value.y))
-  
-  # make sure columns are the same in all cases
+  # Merge REMIND, historical and config data
+  d <- merge(d, h) %>%
+    mutate(min_red = c1[i, ]$min_red,
+           min_yel = c1[i, ]$min_yel,
+           max_yel = c1[i, ]$max_yel,
+           max_red = c1[i, ]$max_red)
+
   d1 <- rbind(d1, d)
 }
+
+head(d1)
 
 ```
 
 
-## Cat3, Filter Data
+#### Cat3, Filter Data
 
 ```{r}
+
+
 # TODO
 # - support "metric" = relative
+# - remove "scenario" dimension? or at least show only one?
 
 # category 3
 d3 <- data.frame()
 c3 <- cfg[cfg$category == 3, ]
 
-# assemble data by row of cfg
+# assemble data each row of the config at a time
 for (i in 1:nrow(c3)) {
-  # create filters
-  # check whether regions, periods, scenarios are specified
-  # TODO: extend to support excluding elements, multiple elements
-  reg <- if (is.na(c3[i, "region"]))   all_reg else c3[i, "region"]
-  per <- if (is.na(c3[i, "period"]))   all_per else c3[i, "period"]
-  sce <- if (is.na(c3[i, "scenario"])) all_sce else c3[i, "scenario"]
+  # create filters: check whether regions, periods, scenarios are specified
+  # split the string, in case multiple elements are given
+  # TODO: extend to support excluding elements
+  reg <- if (is.na(c3[i, "region"]))   all_reg else strsplit(c3[i, "region"], split = ", |,")[[1]]
+  per <- if (is.na(c3[i, "period"]))   all_per else strsplit(as.character(c3[i, "period"]), split = ", |,")[[1]]
+  sce <- if (is.na(c3[i, "scenario"])) all_sce else strsplit(c3[i, "scenario"], split = ", |, ")[[1]]
   
-  # filter data for each row in cfg
-  d <- data %>% 
-  filter(variable == c3[i, "variable"], 
+  # filter data for current row of config
+  d <- data %>%
+  filter(variable == c3[i, "variable"], # only one variable allowed per row
          region %in% reg,
          period %in% per,
          scenario %in% sce)
-  c <- select(c3[i,], 
+  
+  # relevant config data
+  # TODO: might not be necessary anymore
+  c <- select(c3[i, ], 
               c(variable, region, period, scenario, 
                 min_red, min_yel, max_yel, max_red))
-  # remove column names that have "NA" in cfg as they will not be used for merge
-  c <- c[ ,!is.na(c)]
-  merge_cols <- colnames(c)[colnames(c) %in% by]
-  d <- merge(d, c, by=merge_cols)
+  
+  # attach thresholds to data slice
+  d <- d %>%
+    mutate(min_red = c3[i, ]$min_red,
+           min_yel = c3[i, ]$min_yel,
+           max_yel = c3[i, ]$max_yel,
+           max_red = c3[i, ]$max_red)
   
   d3 <- rbind(d3, d)
 }
 
+head(d3)
+
 ```
 
 
-## Duplicates
+#### Duplicates
 
 ```{r}
-
-d <- d3
+# Category 1
 
 # check for duplicates
 # BEWARE: maybe sometimes duplicates are wanted?
 # e.g. because regions have specific goals but also "all regions" have same goal
-duplicates <- d[duplicated(d[c("variable", "region", "period", "scenario")]), ]
-no_dupl <- anti_join(d, duplicates)
+duplicates <- d1[duplicated(d1[c("variable", "region", "period", "scenario", "ref_model")]), ]
+no_dupl <- anti_join(d1, duplicates)
 
 # overwrite "earlier" values using "later" ones 
 # BEWARE: requires specific country to come after "all regions"
 # alternative approach: go from "all regions" to spelling out goals for all regions,
 # then individual countries could get higher priority over generic "all regions"
-d <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"), all.x = T) %>%
+d1 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value", 
+                                     "ref_model", "ref_value"), 
+           all.x = T) %>%
   mutate(min_red = ifelse(is.na(min_red.y), min_red.x, min_red.y)) %>%
   mutate(min_yel = ifelse(is.na(min_yel.y), min_yel.x, min_yel.y)) %>%
   mutate(max_yel = ifelse(is.na(max_yel.y), max_yel.x, max_yel.y)) %>%
@@ -215,87 +310,132 @@ d <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"), all.x = T) %
   select(-c("min_red.x", "min_yel.x", "max_yel.x", "max_red.x",
             "min_red.y", "min_yel.y", "max_yel.y", "max_red.y"))
 
+# Category 3
+
+# check for duplicates
+# BEWARE: maybe sometimes duplicates are wanted?
+# e.g. because regions have specific goals but also "all regions" have same goal
+# TODO: fix if duplicates have same threshold values they are completely deleted
+duplicates <- d3[duplicated(d3[c("variable", "region", "period", "scenario")]), ]
+no_dupl <- anti_join(d3, duplicates)
+
+# overwrite "earlier" values using "later" ones 
+# BEWARE: requires specific country to come after "all regions"
+# alternative approach: go from "all regions" to spelling out goals for all regions,
+# then individual countries could get higher priority over generic "all regions"
+d3 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"), 
+            all.x = T) %>%
+    mutate(min_red = ifelse(is.na(min_red.y), min_red.x, min_red.y)) %>%
+    mutate(min_yel = ifelse(is.na(min_yel.y), min_yel.x, min_yel.y)) %>%
+    mutate(max_yel = ifelse(is.na(max_yel.y), max_yel.x, max_yel.y)) %>%
+    mutate(max_red = ifelse(is.na(max_red.y), max_red.x, max_red.y)) %>%
+    select(-c("min_red.x", "min_yel.x", "max_yel.x", "max_red.x",
+              "min_red.y", "min_yel.y", "max_yel.y", "max_red.y"))
+
+
 ```
 
 
-# Evaluate
+### Evaluate Thresholds
 
-## Cat3, Evaluate
+#### Cat1, Evaluate
+
 ```{r}
 
-# test whether values are above or below thresholds (Category 3)
-d <- d %>% mutate(check = 
+# test whether values are above or below thresholds (Category 1)
+# for now: "max" thresholds are interpreted as maximum deviation allowed
+# above AND below reference value
+
+
+
+d1 <- d1 %>% mutate(check = 
+                      # check if reference is available
+                      ifelse(is.na(ref_value), "grey",
                         ifelse(
-                          value > d$max_red | value < d$min_red, 
-                          "red",
+                        # relative deviation above/below reference
+                        abs((value-ref_value)/ref_value) > max_red,
+                        "red",
+                        # check if yellow threshold is given, else green
+                        ifelse(!is.na(max_yel),
                           ifelse(
-                            value > d$max_yel | value < d$min_yel, 
+                            abs((value-ref_value)/ref_value) > max_yel,
                             "yellow", 
-                            "green"
+                            "green"),
+                          "green"
                           )
                         )
                       )
-
+                    )
 ```
 
-# Plot
+#### Cat3, Evaluate
+```{r}
 
-## Cat3, Results
-Plot first results [jump here](#jump)
+# test whether values are above or below thresholds (Category 3)
+# TODO make failproof for missing thresholds
+d3 <- d3 %>% mutate(check = 
+                        ifelse(
+                          value > d3$max_red | value < d3$min_red, 
+                          "red",
+                          ifelse(
+                            value > d3$max_yel | value < d3$min_yel, 
+                            "yellow", 
+                            "green"
+                            )
+                          )
+                    )
+```
+
+### Plot
+
+#### Category 1, Results
+Test internal linking [jump here](#jump)
 
 ```{r}
+
+source("plots_vs.R")
+
+
 # group regions (example)
 mapping_reg <- data.frame(region = all_reg, group.reg = c(rep("region", 24), "World"))
 d <- merge(d, mapping_reg, by = "region")
 
-# x-axis interpreted as continuous, make discrete 
-d$period <- as.character(d$period)
-#colors <- c(green, yellow, red)
+# for (var in unique(d1$variable)) {
+#   print(validationHeatmap(d1, var, cat = 3))
+# }
 
-# new column: text for tooltip:
-d <- d %>%
-  mutate(text = paste0(region, "\n", 
-                       period, "\n", 
-                       "Value: ", round(value,2), "\n",
-                       ifelse(period == "2030",
-                              paste0("Min: ", d$min_yel, "/", d$min_red,"\n",
-                                     "Max: ", d$max_yel, "/", d$max_red),
-                              paste0("Min: ", d$min_yel, "/", d$min_red,"\n",
-                                     "Max: ", d$max_yel, "/", d$max_red)
-                              )
-                       )
-         )
+validationHeatmap(d1, "Emi|CO2|Energy", cat = 1)
+validationHeatmap(d1, "PE|Coal", cat = 1)
+validationHeatmap(d1, "PE|Oil", cat = 1)
+validationHeatmap(d1, "FE|Electricity", cat = 1)
 
-# classic ggplot, with text in aes
-p <- ggplot(d, aes(x = region, y = period, fill=check, text=text)) +
-  geom_tile(color="white", linewidth=0.2) +
-  scale_fill_manual(values = colors, breaks = colors) +
-  facet_grid(scenario~.)
-  # make it beautiful
-  # from https://www.r-bloggers.com/2016/02/making-faceted-heatmaps-with-ggplot2/
-p <- p + labs(x=NULL, y=NULL, title="Price|Carbon")
-p <- p + theme_tufte()
-p <- p + theme(axis.ticks=element_blank())
-p <- p + theme(axis.text=element_text(size=7))
-p <- p + coord_equal()
-p <- p + theme(legend.position = "none")
-# p + theme(panel.spacing = unit(2, "lines"))
-p
-fig <- ggplotly(p, tooltip="text")
+```
+#### Category 3, Results
+Plot first results [jump here](#jump)
 
-# improve plotly layout, works but very manual
-fig <- fig %>% subplot(heights = 0.3) %>%
-    layout(title = list(y=0.64))
-fig
-p
+```{r}
+# for (var in unique(d3$variable)) {
+#   print(validationHeatmap(d3, var, cat = 3))
+# }
+validationHeatmap(d3, "Price|Carbon", cat = 3)
+validationHeatmap(d3, "Emi|GHG", cat = 3)
+```
+#### Non-interactive results
+Plot first results [jump here](#jump)
 
+```{r}
+validationHeatmap(d1, "Emi|CO2|Energy", cat = 1, interactive = F)
+validationHeatmap(d1, "PE|Coal", cat = 1, interactive = F)
+validationHeatmap(d1, "PE|Oil", cat = 1, interactive = F)
+validationHeatmap(d3, "Price|Carbon", cat = 3, interactive = F)
 ```
 
 
 
+### Jump here {#jump}
 
+More detailed results
 Standalone Test
-
 ```{r, eval=FALSE}
 
 
@@ -324,8 +464,7 @@ p <- ggplot(data, aes(X, Y, fill= cols, text=text)) +
   scale_fill_manual(values = colors, breaks = colors)
 
 ggplotly(p, tooltip="text")
+p
 ```
 
-# Jump here {#jump}
 
-More detailed results
