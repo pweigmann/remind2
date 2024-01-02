@@ -22,8 +22,8 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
             )
   }
 
-  # text for tooltip, category 3
-  if (cat == 3) {
+  # text for tooltip, category 2
+  if (cat == 2) {
     d <- d %>%
       mutate(text = paste0(region, "\n",
                            period, "\n",
@@ -32,7 +32,19 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
                                   "Max: ", d$max_yel, " / ", d$max_red)
                           )
       )
-    }
+  }
+
+  if (cat == 3) {
+    d <- d %>%
+      mutate(text = paste0(region, "\n",
+                           period, "\n",
+                           "Avg. growth/yr: ", round(check_value,2)*100, "% \n",
+                           "Absolute value: ", round(value,2), " \n",
+                           paste0("Min: ", d$min_yel*100, "% / ", d$min_red*100, "% \n",
+                                  "Max: ", d$max_yel*100, "% / ", d$max_red*100, "%")
+      )
+      )
+  }
 
   # classic ggplot, with text in aes
   p <- ggplot(d, aes(x = region, y = period, fill=check, text=text)) +
@@ -41,7 +53,7 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
     facet_grid(scenario~.)
   # make it beautiful
   # from https://www.r-bloggers.com/2016/02/making-faceted-heatmaps-with-ggplot2/
-  p <- p + labs(x=NULL, y=NULL, title=var)
+  p <- p + labs(x=NULL, y=NULL, title=paste0(var, " [", d$unit[1], "]"))
   p <- p + theme_tufte(base_family="Helvetica")
   p <- p + theme(axis.ticks=element_blank())
   p <- p + theme(axis.text=element_text(size=7))
