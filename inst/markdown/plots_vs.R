@@ -1,7 +1,6 @@
 
 
-
-validationHeatmap <- function(d, var, cat, interactive = T) {
+validationHeatmap <- function(d, var, cat, metric, interactive = T) {
 
   # possible extension: when giving multiple vars, plot as facets in same row
 
@@ -17,7 +16,10 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
                            "Value: ", round(value,2), "\n",
                            "Ref_Value: ", round(ref_value,2), "\n",
                            "Ref_Source: ", ref_model, "\n",
-                           paste0("Max: ", d$max_yel*100, "% / ", d$max_red*100, "%")
+                           "Thresholds: \n",
+                           ifelse(metric == "relative",
+                             paste0("Max: ", max_yel*100, "% / ", max_red*100, "%"),
+                             paste0("Max: ", max_yel, " / ", max_red))
                           )
             )
   }
@@ -28,10 +30,19 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
       mutate(text = paste0(region, "\n",
                            period, "\n",
                            "Value: ", round(value,2), "\n",
-                           paste0("Min: ", d$min_yel, " / ", d$min_red,"\n",
-                                  "Max: ", d$max_yel, " / ", d$max_red)
-                          )
-      )
+                           ifelse(metric == "relative",
+                                  paste0("Ref Value: ", round(ref_value,2), "\n",
+                                         "Rel Deviation: ", round(check_value,2)*100, "% \n",
+                                         "Thresholds: \n",
+                                         "Min: ", min_yel*100, "% / ", min_red*100,"% \n",
+                                         "Max: ", max_yel*100, "% / ", max_red*100, "%"),
+                                  # for metric == "absolute"
+                                  paste0("Thresholds: \n",
+                                         "Min: ", min_yel, " / ", min_red,"\n",
+                                         "Max: ", max_yel, " / ", max_red)
+                                )
+                           )
+            )
   }
 
   if (cat == 3) {
@@ -40,15 +51,16 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
                            period, "\n",
                            "Avg. growth/yr: ", round(check_value,2)*100, "% \n",
                            "Absolute value: ", round(value,2), " \n",
-                           paste0("Min: ", d$min_yel*100, "% / ", d$min_red*100, "% \n",
-                                  "Max: ", d$max_yel*100, "% / ", d$max_red*100, "%")
+                           "Thresholds: \n",
+                           paste0("Min: ", min_yel*100, "% / ", min_red*100, "% \n",
+                                  "Max: ", max_yel*100, "% / ", max_red*100, "%")
       )
       )
   }
 
   # classic ggplot, with text in aes
   p <- ggplot(d, aes(x = region, y = period, fill=check, text=text)) +
-    geom_tile(color="white", linewidth=0.2) +
+    geom_tile(color="white", linewidth=0.0) +
     scale_fill_manual(values = colors, breaks = colors) +
     facet_grid(scenario~.)
   # make it beautiful
@@ -60,13 +72,18 @@ validationHeatmap <- function(d, var, cat, interactive = T) {
   p <- p + coord_equal()
   p <- p + theme(legend.position = "none")
 
+
   # p + theme(panel.spacing = unit(2, "lines"))
-  p
+
+  # not great, only works with "World" being the first region
+  if("World" %in% d$region) {
+    p <- p + geom_vline(xintercept = 1.5, linewidth = 0.8, color = "white")
+  }
   fig <- ggplotly(p, tooltip="text")
 
   # improve plotly layout, works but very manual
   #fig <- fig %>% subplot(heights = 0.3) %>%
-  #  layout(title = list(y=0.64))
+  #   layout(title = list(y=0.64))
   if (interactive) {
     return(fig)
   } else {

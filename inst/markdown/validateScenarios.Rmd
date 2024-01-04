@@ -16,15 +16,15 @@ library(ggplot2)
 library(ggthemes)
 library(plotly)
 
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, 
+                      out.width='100%')
 ```
 
+#### Import Data
 
-### Import Data
+For now: one or multiple `REMIND_generic.mif` + `historical.mif`
 
-For now: one or multiple ``REMIND_generic.mif`` + ``historical.mif``
-
-In the future potentially: support ``quitte`` or ``fulldata.gdx``
+In the future potentially: support `quitte` or `fulldata.gdx`
 
 ```{r, cache = TRUE}
 # from /p/tmp/pascalwe/ariadne/production/remind_23-09-28_ap_polishing_tech
@@ -43,27 +43,33 @@ if (file.exists("hist.rds")) {
   saveRDS(hist, "hist.rds")
 }
 
+
+# change ordering of factors, put last element first
+new_order <- c(tail(levels(data$region), 1), head(levels(data$region), -1))
+data$region <- factor(data$region, levels = new_order)
+
+
 #data <- remind2::deletePlus(quitte::read.quitte(c("REMIND_generic_Bal.mif",
 #                                                  "REMIND_generic_NPi.mif")))
 #hist <- quitte::read.quitte("historical.mif")
-head(data)
 ```
 
-Load validation criteria from config file: ``validationConfig.csv``
+Load validation criteria from config file: `validationConfig.csv`
+
 ```{r}
-cfg <- read.csv2("validationConfig.csv", na.strings = "") %>% 
-  mutate(max_red = as.numeric(max_red), max_yel = as.numeric(max_yel))
+cfg <- read.csv2("validationConfig.csv", na.strings = "")
 
 # fill empty threshold columns with Infinity
-cfg <- cfg %>% mutate(min_red = ifelse(is.na(min_red), -Inf, min_red),
-                      min_yel = ifelse(is.na(min_yel), -Inf, min_yel),
-                      max_yel = ifelse(is.na(max_yel),  Inf, max_yel),
-                      max_red = ifelse(is.na(max_red),  Inf, max_red))
+cfg <- cfg %>% mutate(min_red = as.numeric(ifelse(is.na(min_red), -Inf, min_red)),
+                      min_yel = as.numeric(ifelse(is.na(min_yel), -Inf, min_yel)),
+                      max_yel = as.numeric(ifelse(is.na(max_yel),  Inf, max_yel)),
+                      max_red = as.numeric(ifelse(is.na(max_red),  Inf, max_red))
+                      )
 
 head(cfg)
 ```
 
-### Engineer Data
+#### Engineer Data
 
 ```{r}
 # dimensions of data
@@ -83,11 +89,7 @@ all_sce <- unique(data$scenario)
 colors <- c(green = "#008450", yellow = "#EFB700", red = "#B81D13", grey = "#808080")
 ```
 
-#### Cat1, Filter Data
-
-Category 1: deviation to historical reference
-
-- [ ] metric: absolute, relative
+##### Cat1, Filter Data
 
 ```{r}
 # category 1 data objects
@@ -139,17 +141,15 @@ for (i in 1:nrow(c1)) {
     mutate(min_red = c1[i, ]$min_red,
            min_yel = c1[i, ]$min_yel,
            max_yel = c1[i, ]$max_yel,
-           max_red = c1[i, ]$max_red)
+           max_red = c1[i, ]$max_red,
+           metric  = c1[i, ]$metric)
 
   d1 <- rbind(d1, d)
 }
 
-head(d1)
-
 ```
 
-
-#### Cat2, Filter Data
+##### Cat2, Filter Data
 
 ```{r}
 # TODO
@@ -176,18 +176,38 @@ for (i in 1:nrow(c2)) {
          period %in% per,
          scenario %in% sce)
   
+  # in case of comparison to reference year, get ref data and merge
+  if (c2[i, ]$metric == "relative") {
+    ref <- data %>%
+       filter(variable == c2[i, "variable"], # only one variable allowed per row
+              region %in% reg,
+              period == c2[i, ]$ref_period,
+              scenario %in% sce) %>%
+      mutate(ref_value = value) %>%
+      select(-c(period, value))
+    d <- merge(d, ref)
+  } else {
+    d <- mutate(d, ref_value = NA)
+  }
+  
   # attach thresholds to data slice
   # (works as long as we only have one set of thresholds per cfg row)
   d <- d %>%
     mutate(min_red = c2[i, ]$min_red,
            min_yel = c2[i, ]$min_yel,
            max_yel = c2[i, ]$max_yel,
-           max_red = c2[i, ]$max_red)
+           max_red = c2[i, ]$max_red,
+           metric  = c2[i, ]$metric)
+  
+  if (c2[i, ]$metric != "absolute") {
+    
+  }
   
   d2 <- rbind(d2, d)
 }
 ```
-#### Cat3, Filter Data
+
+##### Cat3, Filter Data
 
 ```{r}
 # category 3 data objects
@@ -216,13 +236,14 @@ for (i in 1:nrow(c3)) {
     mutate(min_red = c3[i, ]$min_red,
            min_yel = c3[i, ]$min_yel,
            max_yel = c3[i, ]$max_yel,
-           max_red = c3[i, ]$max_red)
+           max_red = c3[i, ]$max_red,
+           metric  = c3[i, ]$metric)
   
   d3 <- rbind(d3, d)
 }
 ```
 
-#### Duplicates
+##### Duplicates
 
 ```{r}
 # Category 1
@@ -230,7 +251,8 @@ for (i in 1:nrow(c3)) {
 # check for duplicates
 # BEWARE: maybe sometimes duplicates are wanted?
 # e.g. because regions have specific goals but also "all regions" have same goal
-duplicates <- d1[duplicated(d1[c("variable", "region", "period", "scenario", "ref_model")]), ]
+duplicates <- d1[duplicated(d1[c("variable", "region", "period", 
+                                 "scenario", "ref_model", "metric")]), ]
 no_dupl <- anti_join(d1, duplicates)
 
 # overwrite "earlier" values using "later" ones 
@@ -238,7 +260,7 @@ no_dupl <- anti_join(d1, duplicates)
 # alternative approach: go from "all regions" to spelling out goals for all regions,
 # then individual countries could get higher priority over generic "all regions"
 d1 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value", 
-                                     "ref_model", "ref_value"), 
+                                     "ref_model", "ref_value", "metric"), 
            all.x = T) %>%
   mutate(min_red = ifelse(is.na(min_red.y), min_red.x, min_red.y)) %>%
   mutate(min_yel = ifelse(is.na(min_yel.y), min_yel.x, min_yel.y)) %>%
@@ -253,14 +275,16 @@ d1 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value",
 # BEWARE: maybe sometimes duplicates are wanted?
 # e.g. because regions have specific goals but also "all regions" have same goal
 # TODO: fix if duplicates have same threshold values they are completely deleted
-duplicates <- d2[duplicated(d2[c("variable", "region", "period", "scenario")]), ]
+duplicates <- d2[duplicated(d2[c("variable", "region", "period", 
+                                 "scenario", "metric")]), ]
 no_dupl <- anti_join(d2, duplicates)
 
 # overwrite "earlier" values using "later" ones 
 # BEWARE: requires specific country to come after "all regions"
 # alternative approach: go from "all regions" to spelling out goals for all regions,
 # then individual countries could get higher priority over generic "all regions"
-d2 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"), 
+d2 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value", "metric", 
+                                      "ref_value"), 
             all.x = T) %>%
     mutate(min_red = ifelse(is.na(min_red.y), min_red.x, min_red.y)) %>%
     mutate(min_yel = ifelse(is.na(min_yel.y), min_yel.x, min_yel.y)) %>%
@@ -275,14 +299,15 @@ d2 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"),
 # BEWARE: maybe sometimes duplicates are wanted?
 # e.g. because regions have specific goals but also "all regions" have same goal
 # TODO: fix if duplicates have same threshold values they are completely deleted
-duplicates <- d3[duplicated(d3[c("variable", "region", "period", "scenario")]), ]
+duplicates <- d3[duplicated(d3[c("variable", "region", "period", 
+                                 "scenario", "metric")]), ]
 no_dupl <- anti_join(d3, duplicates)
 
 # overwrite "earlier" values using "later" ones 
 # BEWARE: requires specific country to come after "all regions"
 # alternative approach: go from "all regions" to spelling out goals for all regions,
 # then individual countries could get higher priority over generic "all regions"
-d3 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"), 
+d3 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value", "metric"), 
             all.x = T) %>%
     mutate(min_red = ifelse(is.na(min_red.y), min_red.x, min_red.y)) %>%
     mutate(min_yel = ifelse(is.na(min_yel.y), min_yel.x, min_yel.y)) %>%
@@ -293,59 +318,77 @@ d3 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value"),
 
 ```
 
+#### Evaluate Thresholds
 
-### Evaluate Thresholds
-
-#### Cat1, Evaluate
+##### Cat1, Evaluate
 
 ```{r}
 
 # test whether values are above or below thresholds (Category 1)
 # for now: "max" thresholds are interpreted as maximum deviation allowed
 # above AND below reference value
-d1 <- d1 %>% mutate(check = 
-                      # check if reference is available
-                      ifelse(is.na(ref_value), "grey",
-                        ifelse(
-                        # relative deviation above/below reference, 
-                        # first check whether red threshold is violated...
-                        abs((value-ref_value)/ref_value) > max_red,
-                        "red",
-                        # otherwise check if yellow threshold is violated...
-                          ifelse(
-                            abs((value-ref_value)/ref_value) > max_yel,
-                            "yellow",
-                          # ... else green
-                          "green"
-                          )
+d1 <- d1 %>%
+  # calculate value that will be compared to thresholds
+  mutate(check_value = ifelse(is.na(ref_value), NA,
+                              ifelse(metric == "relative",
+                                # relative deviation above/below reference
+                                abs((value-ref_value)/ref_value),
+                                # absolute deviation above/below reference
+                                abs(value-ref_value)
+                                )
                         )
+         )  %>%
+  # perform comparison to thresholds                           
+  mutate(check = ifelse(is.na(check_value), "grey",
+                    ifelse(
+                    # first check whether red threshold is violated...
+                    check_value > max_red,
+                    "red",
+                    # otherwise check if yellow threshold is violated...
+                      ifelse(
+                        check_value > max_yel,
+                        "yellow",
+                      # ... else green
+                      "green"
                       )
                     )
+                  )
+                )
 ```
 
-#### Cat2, Evaluate
+##### Cat2, Evaluate
+
 ```{r}
 # test whether values are above or below thresholds (category 2)
-d2 <- d2 %>% mutate(check =
-                        ifelse(
-                          value > d2$max_red | value < d2$min_red,
-                          "red",
-                          ifelse(
-                            value > d2$max_yel | value < d2$min_yel,
-                            "yellow",
-                            "green"
-                            )
-                          )
+d2 <- d2 %>%
+  # calculate value that will be compared to thresholds
+  mutate(check_value = ifelse(metric == "relative",
+                              # relative deviation above/below reference
+                              (value-ref_value)/ref_value,
+                              # simply existing value
+                              value
+                              )
+         )  %>%
+  # check against thresholds
+  mutate(check = ifelse(
+                    check_value > max_red | check_value < min_red,
+                    "red",
+                    ifelse(
+                      check_value > max_yel | check_value < min_yel,
+                      "yellow",
+                      "green"
                     )
+                 )
+         )
 ```
 
+##### Cat3, Evaluate
 
-#### Cat3, Evaluate
 ```{r}
 # calculate average growth rate of the last 5 years between 2010 and 2060
 # TODO: in case of a need to look further than 2060, split df and add 
-# calculations for 10-year step periods
-d3 <- filter(d3, period <= 2060 & period >= 2010)
+# calculations for 10-year step periods (move to filter data?)
+d3 <- filter(d3, period <= 2050 & period >= 2010)
 
 # add a column with the value 5 years ago for later calculations
 d3_copy <- d3
@@ -353,7 +396,7 @@ d3$period <- d3$period + 5
 d3 <- d3 %>% mutate(value_5y_ago = value) %>%
   select(-value) %>% merge(d3_copy)
 
-# average growth rate
+# calculate and check the yearly average growth rate
 d3 <- d3 %>% 
   mutate(check_value = (value/value_5y_ago)^(1/5) - 1) %>% 
   mutate(check = ifelse(
@@ -368,17 +411,88 @@ d3 <- d3 %>%
               )
 ```
 
-### Plot
-
-#### Cat1, Results
-Test internal linking [jump here](#jump)
+## Plot
 
 ```{r}
+# Prepare Plots
 source("plots_vs.R")
 
 # group regions (example)
-mapping_reg <- data.frame(region = all_reg, group.reg = c(rep("region", 24), "World"))
-d <- merge(d, mapping_reg, by = "region")
+# mapping_reg <- data.frame(region = all_reg, group.reg = c(rep("region", 24), "World"))
+# d <- merge(d, mapping_reg, by = "region")
+
+```
+
+### Summary
+
+Distribution of check results:
+
+- Focus on overall run quality, very condensed.
+- No information about importance of variables.
+
+```{r}
+# total amount of red/yellow/green/grey
+cat1 <- data.frame(d1 %>% group_by(check) %>% summarise(c1 = n()))
+cat2 <- data.frame(d2 %>% group_by(check) %>% summarise(c2 = n()))
+cat3 <- data.frame(d3 %>% group_by(check) %>% summarise(c3 = n()))
+
+cat_all <- merge(cat1, merge(cat2, cat3), all.x = T) %>%
+  mutate(all = c1+c2+c3) %>%
+  pivot_longer(cols = 2:5, names_to = "category")
+
+cat_all[is.na(cat_all)] <- 0
+cat_all <- group_by(cat_all, category) %>% mutate(frac = value/sum(value)) %>%
+  pivot_longer(cols = c("value", "frac"), names_to = "metric", values_to = "val")
+
+cat_all$check <- factor(cat_all$check,
+                        levels = c("grey", "red","yellow", "green"),
+                        ordered = T)
+
+p <- ggplot(data=cat_all, aes(x=category, y=val, fill=check)) +
+  geom_bar(stat="identity")+
+  facet_wrap(metric~., scales="free") +
+  scale_fill_manual(values = colors)
+ggplotly(p, tooltip="val")
+
+```
+
+Alternative Summary Idea: Treemaps
+
+- Focus on how many checks failed and which variable failed most.
+- No information about importance of variables.
+```{r}
+library(treemap)
+# treemap for red
+cat1 <- data.frame(d1 %>% group_by(check, variable) %>% summarise(n())) %>%
+  filter(check == "red") %>% mutate(cat = 1)
+cat2 <- data.frame(d2 %>% group_by(check, variable) %>% summarise(n())) %>%
+  filter(check == "red") %>% mutate(cat = 2)
+cat3 <- data.frame(d3 %>% group_by(check, variable) %>% summarise(n())) %>%
+  filter(check == "red") %>% mutate(cat = 3)
+
+cat_all <- rbind(cat1, cat2, cat3)
+
+treemap(cat_all, index=c("cat", "variable"),
+        vSize="n..", title = "Number of `red` in each category and variable")
+
+
+cat1 <- data.frame(d1 %>% group_by(check, variable) %>% summarise(n()))
+
+
+treemap(cat1, index=c("check", "variable"),
+        vSize="n..", title = "Counting all check outcomes in Category 1",
+        palette = colors, fontsize.labels=c(0,12),)
+  
+```
+
+
+### Cat1, Historical Comparison
+
+Category 1: deviation to historical reference
+
+Test internal linking [jump here](#jump)
+
+```{r}
 
 validationHeatmap(d1, "Emi|CO2|Energy", cat = 1)
 validationHeatmap(d1, "PE|Coal", cat = 1)
@@ -387,21 +501,36 @@ validationHeatmap(d1, "FE|Electricity", cat = 1)
 
 ```
 
-#### Cat2, Results
+### Cat2, Value Checks
+
+Deviation to expert guesses.
 
 ```{r}
 validationHeatmap(d2, "Price|Carbon", cat = 2)
+```
+```{r}
 validationHeatmap(d2, "Emi|GHG", cat = 2)
 ```
+```{r}
+validationHeatmap(d2, "Temperature|Global Mean", cat = 2)
+```
+```{r}
+validationHeatmap(d2, "Emi|CO2", cat = 2)
+```
+```{r}
+validationHeatmap(d2, "FE", cat = 2)
+```
 
-#### Cat3, Results
+### Cat3, Growth Rates
+
+check average yearly growth rates (average of the last 5 years)
 
 ```{r}
 validationHeatmap(d3, "Cap|Electricity|Solar|PV", cat = 3)
 ```
 
+### Non-interactive results
 
-#### Non-interactive results
 Plot first results [jump here](#jump)
 
 ```{r}
@@ -411,16 +540,11 @@ validationHeatmap(d1, "PE|Oil", cat = 1, interactive = F)
 validationHeatmap(d2, "Price|Carbon", cat = 2, interactive = F)
 ```
 
-
-
 ### Jump here {#jump}
 
-More detailed results
-Standalone Test
+More detailed results, Standalone Test
+
 ```{r, eval=FALSE}
-
-
-
 # Dummy data
 x <- LETTERS[1:10]
 y <- paste0("var", seq(1,10))
@@ -441,11 +565,11 @@ data <- data %>%
 
 # classic ggplot, with text in aes
 p <- ggplot(data, aes(X, Y, fill= cols, text=text)) +
-  geom_tile() +
+  geom_tile(color="white", linewidth=0.2) +
+  scale_x_discrete(expand=c(0, 0), breaks=c("I", "J"))+
   scale_fill_manual(values = colors, breaks = colors)
 
+
 ggplotly(p, tooltip="text")
-p
+
 ```
-
-
