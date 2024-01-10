@@ -1,7 +1,6 @@
 ---
 title: "validateScenarios"
-author: "Pascal Weigmann"
-date: "2023-12-12"
+date: "2024-01-09"
 output:
   html_document:
     toc: true
@@ -16,6 +15,7 @@ library(ggplot2)
 library(ggthemes)
 library(plotly)
 
+options(scipen = 20, digits = 2)
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, 
                       out.width='100%')
 ```
@@ -23,8 +23,6 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
 #### Import Data
 
 For now: one or multiple `REMIND_generic.mif` + `historical.mif`
-
-In the future potentially: support `quitte` or `fulldata.gdx`
 
 ```{r, cache = TRUE}
 # from /p/tmp/pascalwe/ariadne/production/remind_23-09-28_ap_polishing_tech
@@ -66,12 +64,13 @@ cfg <- cfg %>% mutate(min_red = as.numeric(ifelse(is.na(min_red), -Inf, min_red)
                       max_red = as.numeric(ifelse(is.na(max_red),  Inf, max_red))
                       )
 
-head(cfg)
+#head(cfg)
 ```
 
-#### Engineer Data
 
 ```{r}
+#### Engineer Data
+
 # dimensions of data
 by <- c("variable", "region", "period", "scenario")
 
@@ -89,9 +88,10 @@ all_sce <- unique(data$scenario)
 colors <- c(green = "#008450", yellow = "#EFB700", red = "#B81D13", grey = "#808080")
 ```
 
-##### Cat1, Filter Data
 
 ```{r}
+##### Cat1, Filter Data
+
 # category 1 data objects
 d1 <- data.frame()
 c1 <- cfg[cfg$category == 1, ]
@@ -149,9 +149,10 @@ for (i in 1:nrow(c1)) {
 
 ```
 
-##### Cat2, Filter Data
 
 ```{r}
+##### Cat2, Filter Data
+
 # TODO
 # - support "metric" = relative
 # - remove "scenario" dimension? or at least show only one?
@@ -207,9 +208,10 @@ for (i in 1:nrow(c2)) {
 }
 ```
 
-##### Cat3, Filter Data
 
 ```{r}
+##### Cat3, Filter Data
+
 # category 3 data objects
 d3 <- data.frame()
 c3 <- cfg[cfg$category == 3, ]
@@ -243,9 +245,10 @@ for (i in 1:nrow(c3)) {
 }
 ```
 
-##### Duplicates
 
 ```{r}
+##### Duplicates
+
 # Category 1
 
 # check for duplicates
@@ -318,11 +321,12 @@ d3 <- merge(no_dupl, duplicates, by=c(by, "unit", "model", "value", "metric"),
 
 ```
 
+
+
+```{r}
 #### Evaluate Thresholds
 
 ##### Cat1, Evaluate
-
-```{r}
 
 # test whether values are above or below thresholds (Category 1)
 # for now: "max" thresholds are interpreted as maximum deviation allowed
@@ -356,9 +360,10 @@ d1 <- d1 %>%
                 )
 ```
 
-##### Cat2, Evaluate
 
 ```{r}
+##### Cat2, Evaluate
+
 # test whether values are above or below thresholds (category 2)
 d2 <- d2 %>%
   # calculate value that will be compared to thresholds
@@ -382,9 +387,10 @@ d2 <- d2 %>%
          )
 ```
 
-##### Cat3, Evaluate
 
 ```{r}
+##### Cat3, Evaluate
+
 # calculate average growth rate of the last 5 years between 2010 and 2060
 # TODO: in case of a need to look further than 2060, split df and add 
 # calculations for 10-year step periods (move to filter data?)
@@ -411,9 +417,10 @@ d3 <- d3 %>%
               )
 ```
 
-## Plot
 
 ```{r}
+## Plot
+
 # Prepare Plots
 source("plots_vs.R")
 
@@ -423,14 +430,17 @@ source("plots_vs.R")
 
 ```
 
-### Summary
 
-Distribution of check results:
-
-- Focus on overall run quality, very condensed.
-- No information about importance of variables.
 
 ```{r}
+
+### Summary
+
+# Distribution of check results:
+# 
+# - Focus on overall run quality, very condensed.
+# - No information about importance of variables.
+
 # total amount of red/yellow/green/grey
 cat1 <- data.frame(d1 %>% group_by(check) %>% summarise(c1 = n()))
 cat2 <- data.frame(d2 %>% group_by(check) %>% summarise(c2 = n()))
@@ -452,15 +462,18 @@ p <- ggplot(data=cat_all, aes(x=category, y=val, fill=check)) +
   geom_bar(stat="identity")+
   facet_wrap(metric~., scales="free") +
   scale_fill_manual(values = colors)
-ggplotly(p, tooltip="val")
+#ggplotly(p, tooltip="val")
 
 ```
 
-Alternative Summary Idea: Treemaps
 
-- Focus on how many checks failed and which variable failed most.
-- No information about importance of variables.
 ```{r}
+# Alternative Summary Idea: Treemaps
+# 
+# - Focus on how many checks failed and which variable failed most.
+# - No information about importance of variables.
+
+
 library(treemap)
 # treemap for red
 cat1 <- data.frame(d1 %>% group_by(check, variable) %>% summarise(n())) %>%
@@ -472,104 +485,79 @@ cat3 <- data.frame(d3 %>% group_by(check, variable) %>% summarise(n())) %>%
 
 cat_all <- rbind(cat1, cat2, cat3)
 
-treemap(cat_all, index=c("cat", "variable"),
-        vSize="n..", title = "Number of `red` in each category and variable")
+# treemap(cat_all, index=c("cat", "variable"),
+#         vSize="n..", title = "Number of `red` in each category and variable")
 
 
 cat1 <- data.frame(d1 %>% group_by(check, variable) %>% summarise(n()))
 
 
-treemap(cat1, index=c("check", "variable"),
-        vSize="n..", title = "Counting all check outcomes in Category 1",
-        palette = colors, fontsize.labels=c(0,12),)
+# treemap(cat1, index=c("check", "variable"),
+#         vSize="n..", title = "Counting all check outcomes in Category 1",
+#         palette = colors, fontsize.labels=c(0,12),)
   
 ```
 
 
-### Cat1, Historical Comparison
+### Comparison to Reference Values
 
-Category 1: deviation to historical reference
+Evaluate whether results deviate from a reference source 
+(from historical.mif or same variable from another scenario(not supported yet)).
 
-Test internal linking [jump here](#jump)
+Relative deviation is defined as `abs(run_value - ref_value)/ref_value`.
+
+required:
+
+- `metric`: `absolute` or `relative` (default)
+- at least one threshold, e.g. `max_red`: define strong threshold, enter desired
+  value (decimal for `relative`, e.g. `0.1` for `10%`)
+
+optional:
+
+- `ref_model`: specify one or multiple sources from the historical.mif the data 
+               should be compared to.
+- `max_yel`: define a weaker threshold, besides `max_red`
 
 ```{r}
-
-validationHeatmap(d1, "Emi|CO2|Energy", cat = 1)
-validationHeatmap(d1, "PE|Coal", cat = 1)
 validationHeatmap(d1, "PE|Oil", cat = 1)
+validationHeatmap(d1, "PE|Coal", cat = 1)
 validationHeatmap(d1, "FE|Electricity", cat = 1)
+validationHeatmap(d1, "Emi|CO2|Energy", cat = 1)
 
 ```
 
-### Cat2, Value Checks
+### Target Values (aka. Expert Guesses)
 
-Deviation to expert guesses.
+Check whether variables are above or below absolute or relative thresholds (relative to value from
+a reference year).
+
+required:
+
+- `metric`: `absolute` (default) or `relative`. Default reference year
+  is 2020.
+- at least one of `min_red`, `min_yel`, `max_yel` or `max_red`
+
 
 ```{r}
 validationHeatmap(d2, "Price|Carbon", cat = 2)
-```
-```{r}
+
+validationHeatmap(d2, "Price|Secondary Energy|Electricity", cat = 2)
+
+validationHeatmap(d2, "FE", cat = 2)
+
 validationHeatmap(d2, "Emi|GHG", cat = 2)
-```
-```{r}
+
+validationHeatmap(d2, "Emi|CO2", cat = 2)
+
 validationHeatmap(d2, "Temperature|Global Mean", cat = 2)
 ```
-```{r}
-validationHeatmap(d2, "Emi|CO2", cat = 2)
-```
-```{r}
-validationHeatmap(d2, "FE", cat = 2)
-```
 
-### Cat3, Growth Rates
+### Growth Rates
 
-check average yearly growth rates (average of the last 5 years)
+Check average yearly growth rates (average of the last 5 years).
 
 ```{r}
 validationHeatmap(d3, "Cap|Electricity|Solar|PV", cat = 3)
 ```
 
-### Non-interactive results
 
-Plot first results [jump here](#jump)
-
-```{r}
-validationHeatmap(d1, "Emi|CO2|Energy", cat = 1, interactive = F)
-validationHeatmap(d1, "PE|Coal", cat = 1, interactive = F)
-validationHeatmap(d1, "PE|Oil", cat = 1, interactive = F)
-validationHeatmap(d2, "Price|Carbon", cat = 2, interactive = F)
-```
-
-### Jump here {#jump}
-
-More detailed results, Standalone Test
-
-```{r, eval=FALSE}
-# Dummy data
-x <- LETTERS[1:10]
-y <- paste0("var", seq(1,10))
-data <- expand.grid(X=x, Y=y)
-data$Z <- runif(100, 0, 1.5)
-#data$Y1 <- cut(data$Z, breaks = c(-Inf,0.5,1,Inf), right = FALSE)
-
-#breaks <- c("[-Inf,0.5)", "[0.5,1)", "[1,Inf)")
-colors <- c("green", "yellow", "red")
-
-# Create a vector of length 400 with random colors
-random_colors_vector <- sample(colors, 100, replace = TRUE)
-data$cols <- random_colors_vector
-
-# new column: text for tooltip:
-data <- data %>%
-  mutate(text = paste0("x: ", X, "\n", "y: ", Y, "\n", "Value: ", round(Z,2), "\n", "What else?"))
-
-# classic ggplot, with text in aes
-p <- ggplot(data, aes(X, Y, fill= cols, text=text)) +
-  geom_tile(color="white", linewidth=0.2) +
-  scale_x_discrete(expand=c(0, 0), breaks=c("I", "J"))+
-  scale_fill_manual(values = colors, breaks = colors)
-
-
-ggplotly(p, tooltip="text")
-
-```
