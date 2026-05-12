@@ -41,9 +41,14 @@ reportTechnology <- function(gdx, output = NULL, regionSubsetList = NULL,
   module2realisation <- readGDX(gdx, "module2realisation", react = "silent")
   tran_mod <- module2realisation[module2realisation$modules == "transport", 2]
 
-  CDR_mod <- module2realisation[module2realisation$modules == "CDR", 2]
+  ## Ensure backwards compatibility for release version 3.6.0 (can be removed with 3.7.0)
+  if ("CDR" %in% module2realisation$modules) {
+    CDR_mod <- module2realisation[module2realisation$modules == "CDR", 2]
+  } else {
+    CDR_mod <- module2realisation[module2realisation$modules == "carbonRemoval", 2]
+  }
 
-  sety       <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
+  sety <- readGDX(gdx, c("entySe", "sety"), format = "first_found")
   te <- readGDX(gdx, "te")
 
   # calculate maximal temporal resolution ----
