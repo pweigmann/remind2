@@ -325,7 +325,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
   # 5. REPORTING OF land use emissions provided by MAgPIE -------------------------------------
   if (is.null(extraData)) {
     stop("Argument 'extraData' is NULL. Please provide a valid path to extra data files containing 'AirPollutantsMAgPIE.cs4r'.")
-    # ToDo: 
+    # ToDo:
     # - download file from RSE server
     # - enable different regional resolutions
     # fileMAgPIEAP <- ...
@@ -334,11 +334,10 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
   }
   magpie <- read.magpie(file.path(extraData, fileMAgPIEAP))
   getSets(magpie) <- c("region", "year", "ssp", "rcp", "variable")
-  #cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
+  cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
+  cm_LU_emi_scen <- cm_GDPpopScen # cm_LU_emi_scen is not stored in the gdx, but it should always be the same as cm_GDPpopScen
   # Subset the chosen scenario and SSP
-  #cm_rcp_scen <- "rcp45"
-  #ap_ssp <- "SSP2"
-  magpie <- magpie[, , list(ssp = ap_ssp, rcp = cm_rcp_scen)]
+  magpie <- magpie[, , list(ssp = cm_LU_emi_scen, rcp = cm_rcp_scen)]
   magpie <- collapseDim(magpie, dim = c("ssp", "rcp"))
 
   # Add sum across regions as global
@@ -353,6 +352,15 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
 
   # Add aggregates
   airpollutants <- c("BC", "CO", "NH3", "NOx", "OC", "SO2", "VOC")
+
+  # "AFOLU|Land|+|Peatland" only exists for NH3 and NOx. For all other species set it to zero so that the summation below works
+  airpollutants_wo_NH3_NOx <- setdiff(airpollutants, c("NH3"))
+  zeroNH3NOx <- new.magpie(cells_and_regions = getItems(magpie, dim = 1),
+             years = getItems(magpie, dim = 2),
+             names = paste0("Emi|", airpollutants_wo_NH3_NOx, "|AFOLU|Land|+|Peatland (Mt ", airpollutants_wo_NH3_NOx, "/yr)"),
+             fill = 0)
+
+  magpie <- mbind(magpie, zeroNH3NOx)
 
   for (pollutant in airpollutants) {
     magpie <- mbind(
