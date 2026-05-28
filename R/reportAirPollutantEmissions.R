@@ -332,6 +332,12 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
   } else {
     fileMAgPIEAP <- "AirPollutantsMAgPIE.cs4r"
   }
+
+  if (cm_MAgPIE_Nash == 1) {
+    # REMIND runs in coupled mode --> read the airpollutants from REMIND run folder and expect other dimensions (no ssp and rcp dimension)
+
+  }
+
   magpie <- read.magpie(file.path(extraData, fileMAgPIEAP))
   getSets(magpie) <- c("region", "year", "ssp", "rcp", "variable")
   cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
@@ -353,27 +359,28 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
   # Add aggregates
   airpollutants <- c("BC", "CO", "NH3", "NOx", "OC", "SO2", "VOC")
 
-  # "AFOLU|Land|+|Peatland" only exists for NH3 and NOx. For all other species set it to zero so that the summation below works
-  airpollutants_wo_NH3_NOx <- setdiff(airpollutants, c("NH3", "NOx"))
-  zeroPeatland <- new.magpie(cells_and_regions = getItems(magpie, dim = 1),
-             years = getItems(magpie, dim = 2),
-             names = paste0("Emi|", airpollutants_wo_NH3_NOx, "|AFOLU|Land|+|Peatland (Mt ", airpollutants_wo_NH3_NOx, "/yr)"),
-             fill = 0)
+  # # "AFOLU|Land|+|Peatland" only exists for NH3 and NOx. For all other species set it to zero so that the summation below works
+  # airpollutants_wo_NH3_NOx <- setdiff(airpollutants, c("NH3", "NOx"))
+  # zeroPeatland <- new.magpie(cells_and_regions = getItems(magpie, dim = 1),
+  #            years = getItems(magpie, dim = 2),
+  #            names = paste0("Emi|", airpollutants_wo_NH3_NOx, "|AFOLU|Land|+|Peatland (Mt ", airpollutants_wo_NH3_NOx, "/yr)"),
+  #            fill = 0)
 
-  # "AFOLU|+|Agriculture" does not exist for NH3 and NOx, but it is needed for the summation to "AFOLU". Thus, we add it as zero for these species
+  # "AFOLU|+|Agriculture" only exists for NH3 and NOx, but it is needed for the summation to "AFOLU". Thus, we add it as zero for all other species
+  airpollutants_wo_NH3_NOx <- setdiff(airpollutants, c("NH3", "NOx"))
   zeroAgriculture <- new.magpie(cells_and_regions = getItems(magpie, dim = 1),
              years = getItems(magpie, dim = 2),
-             names = paste0("Emi|", c("NH3", "NOx"), "|AFOLU|+|Agriculture (Mt ", c("NH3", "NOx"), "/yr)"),
+             names = paste0("Emi|", airpollutants_wo_NH3_NOx, "|AFOLU|+|Agriculture (Mt ", airpollutants_wo_NH3_NOx, "/yr)"),
              fill = 0)
 
-  magpie <- mbind(magpie, zeroPeatland, zeroAgriculture)
+  magpie <- mbind(magpie, zeroAgriculture)
 
   for (pollutant in airpollutants) {
     magpie <- mbind(
       magpie,
       setNames(
         dimSums(magpie[, , c(
-          paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
+          #paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
           paste0("Emi|", pollutant, "|AFOLU|Land|+|Fires (Mt ", pollutant, "/yr)")
         )], dim = 3),
         paste0("Emi|", pollutant, "|AFOLU|+|Land (Mt ", pollutant, "/yr)")
@@ -382,7 +389,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
         dimSums(magpie[, , c(
           paste0("Emi|", pollutant, "|AFOLU|+|Agriculture (Mt ", pollutant, "/yr)"),
           paste0("Emi|", pollutant, "|AFOLU|+|Agricultural Waste Burning (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
+          #paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
           paste0("Emi|", pollutant, "|AFOLU|Land|+|Fires (Mt ", pollutant, "/yr)")
         )], dim = 3),
         paste0("Emi|", pollutant, "|AFOLU (Mt ", pollutant, "/yr)")
