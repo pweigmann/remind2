@@ -358,6 +358,10 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
   vm_demFeSector <- readGDX(gdx, "vm_demFeSector", field = "l", restore_zeros = FALSE)[, y, ] * TWa_2_EJ
   vm_demFeSector[is.na(vm_demFeSector)] <- 0
 
+  ## Ensure backwards compatibility for release version 3.6.0 (can be removed with 3.7.0)
+  getNames(vm_demFeSector, dim = 3) <- tolower(getNames(vm_demFeSector, dim = 3))
+  ## End backwards compatibility
+
   # SE demand
   vm_demSe <- readGDX(gdx, "vm_demSe", field = "l", restore_zeros = FALSE)[, y, ] * TWa_2_EJ
   # SE demand of specific energy system technologies
@@ -462,7 +466,7 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
     setNames(dimSums(mselect(vm_demFeSector, all_enty = "seel", all_enty1 = "feelt", emi_sectors = "trans"), dim = 3) /
       mselect(pm_eta_conv, all_te = "tdelt"),
     "SE|Input|Electricity|Transport (EJ/yr)"),
-    setNames(dimSums(mselect(vm_demFeSector, all_enty = "seel", all_enty1 = "feels", emi_sectors = "CDR"), dim = 3) /
+    setNames(dimSums(mselect(vm_demFeSector, all_enty = "seel", all_enty1 = "feels", emi_sectors = "cdr"), dim = 3) /
       mselect(pm_eta_conv, all_te = "tdels"),
     "SE|Input|Electricity|CDR (EJ/yr)"),
     setNames(dimSums(mselect(vm_demSe, all_enty = "seel", all_enty1 = "seh2"), dim = 3),
