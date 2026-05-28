@@ -333,18 +333,21 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
     fileMAgPIEAP <- "AirPollutantsMAgPIE.cs4r"
   }
 
-  if (cm_MAgPIE_Nash == 1) {
-    # REMIND runs in coupled mode --> read the airpollutants from REMIND run folder and expect other dimensions (no ssp and rcp dimension)
-
-  }
-
   magpie <- read.magpie(file.path(extraData, fileMAgPIEAP))
-  getSets(magpie) <- c("region", "year", "ssp", "rcp", "variable")
-  cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
-  cm_LU_emi_scen <- cm_GDPpopScen # cm_LU_emi_scen is not stored in the gdx, but it should always be the same as cm_GDPpopScen
-  # Subset the chosen scenario and SSP
-  magpie <- magpie[, , list(ssp = cm_LU_emi_scen, rcp = cm_rcp_scen)]
-  magpie <- collapseDim(magpie, dim = c("ssp", "rcp"))
+
+  cm_MAgPIE_Nash <- readGDX(gdx, "cm_MAgPIE_Nash") |> as.vector()
+
+  if (cm_MAgPIE_Nash == 0) {
+    getSets(magpie) <- c("region", "year", "ssp", "rcp", "variable")
+    cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
+    cm_LU_emi_scen <- cm_GDPpopScen # cm_LU_emi_scen is not stored in the gdx, but it should always be the same as cm_GDPpopScen
+    # Subset the chosen scenario and SSP
+    magpie <- magpie[, , list(ssp = cm_LU_emi_scen, rcp = cm_rcp_scen)]
+    magpie <- collapseDim(magpie, dim = c("ssp", "rcp"))
+  } else {
+    # in coupled mode expect other dimensions (no ssp and rcp dimension)
+    getSets(magpie) <- c("region", "year", "variable")
+  }
 
   # Add sum across regions as global
   GLO <- dimSums(magpie, dim = 1)
