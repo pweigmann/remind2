@@ -364,7 +364,7 @@ reportPrices <- function(gdx, output = NULL, regionSubsetList = NULL,
         indst = "Industry",
         build = "Buildings",
         trans = "Transport",
-        CDR = "CDR"
+        cdr = "CDR"
       ),
       emiMkt = c(
         ETS = "ETS",
@@ -373,12 +373,26 @@ reportPrices <- function(gdx, output = NULL, regionSubsetList = NULL,
       )
     )
 
+    ## Ensure backwards compatibility for release version 3.6.0 (can be removed with 3.7.0)
+
+    if ("CDR" %in% se.fe.sector.emiMkt$sector) {
+      varName[["sector"]] <- c(
+        indst = "Industry",
+        build = "Buildings",
+        trans = "Transport",
+        CDR = "CDR"
+      )
+    }
+    ## End backwards compatibility
+
     ## add rawdata price variables, calculated from marginals, to the reporting
     addVar <- function(input, var, namevector, fe, se, sector, emiMkt) { # function to add only variables if they were not saved already
       name <- paste0("Price|Final Energy|", paste(namevector, collapse = "|"), " (US$2017/GJ)")
       name <- gsub("||", "|", name, fixed = TRUE)
       name <- gsub("| (", " (", name, fixed = TRUE)
-      if (any(is.na(namevector))) warning("In reportPrices, addVar called with a NA value: ", name)
+      if (any(is.na(namevector))) {
+        stop("In reportPrices, addVar called with a NA value: ", name)
+      }
       if (name %in% getItems(input, 3)) {
         return(NULL)
       } else {
