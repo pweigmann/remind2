@@ -85,7 +85,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
   }
   # Load the data from RSE server or from extraData folder
   file_name_apmagpie <- "AirPollutantsMAgPIE"
-  
+
   if (is.null(extraData)) {
     # download auxiliary file from RSE server
     regionHash <- digest::digest(sort(readGDX(gdx, "all_regi")), "xxhash32")
@@ -111,14 +111,14 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
     emifacs <- read.magpie(file_emifacs)
     # air pollutant emissions from MAgPIE
     file_name_apmagpie_regi <- switch(regionHash,
-      "69585993" = paste0(file_name_apmagpie, "_h12.cs4r"),
-      "8c818b67" = paste0(file_name_apmagpie, "_eu21.cs4r")
+      "69585993" = paste0(file_name_apmagpie, "_H12.cs4r"),
+      "8c818b67" = paste0(file_name_apmagpie, "_21_EU11.cs4r")
     )
     if (is.null(file_name_apmagpie_regi)) {
       stop(paste0("No file '", file_name_apmagpie_regi, "' found for regions in .gdx file."))
     }
-    file_apmagpie <- downloadAuxiliaryFile(file_name_apmagpie)
-    APMagpie <- read.magpie(file_apmagpie)    
+    file_apmagpie <- downloadAuxiliaryFile(file_name_apmagpie_regi)
+    APMagpie <- read.magpie(file_apmagpie)
   } else {
     # check that files exist
     if (!file.exists(file.path(extraData, paste0(file_name_emi2020, ".cs4r")))) {
@@ -128,7 +128,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
     } else if (!file.exists(file.path(extraData, paste0(file_name_apmagpie, ".cs4r")))) {
       stop(paste0("Auxiliary file '", file_name_apmagpie, ".cs4r' not found."))
     }
-    
+
     # read files
     emi2020  <- read.magpie(file.path(extraData, paste0(file_name_emi2020, ".cs4r")))
     emifacs  <- read.magpie(file.path(extraData, paste0(file_name_emifacs, ".cs4r")))
@@ -339,15 +339,15 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
 
   # 5. REPORTING OF land use emissions provided by MAgPIE -------------------------------------
 
-  # The structure of the air pollutant data from MAgPIE depend on whether it is 
+  # The structure of the air pollutant data from MAgPIE depend on whether it is
   # a standalone run (source: mcommons) or a coupled run (source: coupling script)
   cm_MAgPIE_Nash <- readGDX(gdx, "cm_MAgPIE_Nash") |> as.vector()
-  
+
   if (cm_MAgPIE_Nash == 0) {
     # standalone mode
     getSets(APMagpie) <- c("region", "year", "ssp", "rcp", "variable")
+    cm_LU_emi_scen <- readGDX(gdx, "cm_LU_emi_scen")
     cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
-    cm_LU_emi_scen <- cm_GDPpopScen # cm_LU_emi_scen is not stored in the gdx, but it should always be the same as cm_GDPpopScen
     # Subset the chosen scenario and SSP
     APMagpie <- APMagpie[, , list(ssp = cm_LU_emi_scen, rcp = cm_rcp_scen)]
     APMagpie <- collapseDim(APMagpie, dim = c("ssp", "rcp"))
