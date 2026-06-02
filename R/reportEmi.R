@@ -2378,7 +2378,6 @@ reportEmi <- function(gdx, output = NULL, regionSubsetList = NULL,
     emi_Biochar <- dimSums(mselect(EmiPe2Se, all_enty1 = "sebiochar"), dim = 3)
   }
 
-
   out <- mbind(
     out,
     # total negative land-use change emissions

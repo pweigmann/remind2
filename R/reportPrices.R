@@ -139,11 +139,11 @@ reportPrices <- function(gdx, output = NULL, regionSubsetList = NULL,
 
 
   sector <- emi_sectors <- all_emiMkt <- NULL
+
   fe.entries <- entyFe2Sector %>%
     left_join(sector2emiMkt, by = "emi_sectors", relationship = "many-to-many") %>%
     rename(sector = emi_sectors, emiMkt = all_emiMkt) %>%
-    filter(sector != "CDR")
-
+    filter(!(sector %in% c("CDR", "cdr")))
 
   fe.entries.dot <- paste(fe.entries[, 1], fe.entries[, 2], fe.entries[, 3], sep = ".")
 
