@@ -231,19 +231,20 @@ reportSE <- function(gdx, regionSubsetList = NULL, t = c(seq(2005, 2060, 5), seq
 
   ## Heat
   out <- mbind(out,
-    get_prodSE(entyPe, "sehe",                   name = "SE|Heat (EJ/yr)"),
-    get_prodSE( peBio, "sehe",                   name = "SE|Heat|+|Biomass (EJ/yr)"),
-    get_prodSE("pecoal", "sehe",                 name = "SE|Heat|+|Coal (EJ/yr)"),
-    get_prodSE("pegas", "sehe",                  name = "SE|Heat|+|Gas (EJ/yr)"),
-    get_prodSE("pegeo", "sehe",                  name = "SE|Heat|+|Geothermal (EJ/yr)"), # same as SE|Heat|Electricity|Heat Pump
-    get_prodSE("pegeo", "sehe",                  name = "SE|Heat|Electricity|Heat Pump (EJ/yr)"),
-    get_prodSE("pesol", "sehe",                  name = "SE|Heat|+|Solar (EJ/yr)"),
-    get_prodSE( entyPe, "sehe", te = teChp,      name = "SE|Heat|Combined Heat and Power (EJ/yr)"),
-    get_prodSE("pecoal", "sehe", te = "coalchp", name = "SE|Heat|Coal|Combined Heat and Power (EJ/yr)"),
-    get_prodSE("pegas", "sehe", te = "gaschp",   name = "SE|Heat|Gas|Combined Heat and Power (EJ/yr)"),
-    get_prodSE( peBio, "sehe", te = "biochp",    name = "SE|Heat|Biomass|+|Combined Heat and Power (EJ/yr)"),
-    get_prodSE( peBio, "sehe", te = "biohp",     name = "SE|Heat|Biomass|+|Heat (EJ/yr)"),
-    get_prodSE( peBio, "sehe", te = c("biopyrchp", "biopyrhe"),    name = "SE|Heat|Biomass|+|Pyrolysis (EJ/yr)")
+    get_prodSE(entyPe,    "sehe",                 name = "SE|Heat (EJ/yr)"),
+    get_prodSE(peBio,     "sehe",                 name = "SE|Heat|+|Biomass (EJ/yr)"),
+    get_prodSE("pecoal",  "sehe",                 name = "SE|Heat|+|Coal (EJ/yr)"),
+    get_prodSE("pegas",   "sehe",                 name = "SE|Heat|+|Gas (EJ/yr)"),
+    get_prodSE("pegeo",   "sehe",                 name = "SE|Heat|+|Geothermal (EJ/yr)"), # same as SE|Heat|Electricity|Heat Pump
+    get_prodSE("pegeo",   "sehe",                 name = "SE|Heat|Electricity|Heat Pump (EJ/yr)"), # same as SE|Heat|+|Geothermal
+    get_prodSE("pesol",   "sehe",                 name = "SE|Heat|+|Solar (EJ/yr)"),
+    get_prodSE(peFos,     "sehe",                 name = "SE|Heat|Fossil (EJ/yr)"),
+    get_prodSE(entyPe,    "sehe", te = teChp,     name = "SE|Heat|Combined Heat and Power (EJ/yr)"),
+    get_prodSE("pecoal",  "sehe", te = "coalchp", name = "SE|Heat|Coal|Combined Heat and Power (EJ/yr)"),
+    get_prodSE("pegas",   "sehe", te = "gaschp",  name = "SE|Heat|Gas|Combined Heat and Power (EJ/yr)"),
+    get_prodSE(peBio,     "sehe", te = "biochp",  name = "SE|Heat|Biomass|+|Combined Heat and Power (EJ/yr)"),
+    get_prodSE(peBio,     "sehe", te = "biohp",   name = "SE|Heat|Biomass|+|Heat (EJ/yr)"),
+    get_prodSE(peBio,     "sehe", te = c("biopyrchp", "biopyrhe"),    name = "SE|Heat|Biomass|+|Pyrolysis (EJ/yr)")
   )
 
   ## Hydrogen
