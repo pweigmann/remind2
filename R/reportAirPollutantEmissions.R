@@ -83,6 +83,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
   } else {
     stop(paste0("Unknown source of AP baseyear emissions. cm_APsource: ", ap_source))
   }
+
   # Load the data from RSE server or from extraData folder
   file_name_apmagpie <- "AirPollutantsMAgPIE"
 
@@ -95,7 +96,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
       "8c818b67" = paste0(file_name_emi2020, "_eu21.cs4r")
     )
     if (is.null(file_name_emi2020_regi)) {
-      stop(paste0("No file '", file_name_emi2020_regi, "' found for regions in .gdx file."))
+      stop(paste0("No file '", file_name_emi2020, "' found for regions in .gdx file."))
     }
     file_emi2020 <- downloadAuxiliaryFile(file_name_emi2020_regi)
     emi2020 <- read.magpie(file_emi2020)
@@ -105,7 +106,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
       "8c818b67" = paste0(file_name_emifacs, "_eu21.cs4r")
     )
     if (is.null(file_name_emifacs_regi)) {
-      stop(paste0("No file '", file_name_emifacs_regi, "' found for regions in .gdx file."))
+      stop(paste0("No file '", file_name_emifacs, "' found for regions in .gdx file."))
     }
     file_emifacs <- downloadAuxiliaryFile(file_name_emifacs_regi)
     emifacs <- read.magpie(file_emifacs)
@@ -115,7 +116,7 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
       "8c818b67" = paste0(file_name_apmagpie, "_21_EU11.cs4r")
     )
     if (is.null(file_name_apmagpie_regi)) {
-      stop(paste0("No file '", file_name_apmagpie_regi, "' found for regions in .gdx file."))
+      stop(paste0("No file '", file_name_apmagpie, "' found for regions in .gdx file."))
     }
     file_apmagpie <- downloadAuxiliaryFile(file_name_apmagpie_regi)
     APMagpie <- read.magpie(file_apmagpie)
@@ -126,13 +127,19 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
     } else if (!file.exists(file.path(extraData, paste0(file_name_emifacs, ".cs4r")))) {
       stop(paste0("Auxiliary file '", file_name_emifacs, ".cs4r' not found."))
     } else if (!file.exists(file.path(extraData, paste0(file_name_apmagpie, ".cs4r")))) {
-      stop(paste0("Auxiliary file '", file_name_apmagpie, ".cs4r' not found."))
+      # For backwards compatibility: for version <= 3.6.0 this file does not exists, therefore dont stop
+      # With the next release 3.7.0 the following line should be commented in again.
+      #stop(paste0("Auxiliary file '", file_name_apmagpie, ".cs4r' not found."))
+      message("No land use air pollutants loaded since ", file.path(extraData, paste0(file_name_apmagpie, ".cs4r")), " is missing")
     }
 
     # read files
     emi2020  <- read.magpie(file.path(extraData, paste0(file_name_emi2020, ".cs4r")))
     emifacs  <- read.magpie(file.path(extraData, paste0(file_name_emifacs, ".cs4r")))
-    APMagpie <- read.magpie(file.path(extraData, paste0(file_name_apmagpie,".cs4r")))
+    # This if statement can be removed with release 3.7.0
+    if (file.exists(file.path(extraData, paste0(file_name_apmagpie, ".cs4r")))) {
+      APMagpie <- read.magpie(file.path(extraData, paste0(file_name_apmagpie,".cs4r")))
+    }
   }
 
   # Set dim names
@@ -339,98 +346,102 @@ reportAirPollutantEmissions <- function(gdx, output = NULL, regionSubsetList = N
 
   # 5. REPORTING OF land use emissions provided by MAgPIE -------------------------------------
 
-  # The structure of the air pollutant data from MAgPIE depend on whether it is
-  # a standalone run (source: mcommons) or a coupled run (source: coupling script)
-  cm_MAgPIE_Nash <- readGDX(gdx, "cm_MAgPIE_Nash") |> as.vector()
-
-  if (cm_MAgPIE_Nash == 0) {
-    # standalone mode
-    getSets(APMagpie) <- c("region", "year", "ssp", "rcp", "variable")
-    cm_LU_emi_scen <- readGDX(gdx, "cm_LU_emi_scen")
-    cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
-    # Subset the chosen scenario and SSP
-    APMagpie <- APMagpie[, , list(ssp = cm_LU_emi_scen, rcp = cm_rcp_scen)]
-    APMagpie <- collapseDim(APMagpie, dim = c("ssp", "rcp"))
+  # The if statement can be removed with release 3.7.0. It exists for backwards compatibility with releases <= 3.6.0
+  # which do not include the MAgPIE airpollutant emissions
+  if (! exists("APMagpie")) {
+    output_AP_aggregated <- add_columns(output_AP_aggregated, addnm = paste0("Emi|", airpollutants, "|AFOLU (Mt ", airpollutants, "/yr)"), dim = 3.1, fill = 0)
   } else {
-    # in coupled mode expect other dimensions (no ssp and rcp dimension)
-    getSets(APMagpie) <- c("region", "year", "variable")
-  }
 
-  # Add sum across regions as global
-  GLO <- dimSums(APMagpie, dim = 1)
-  getItems(GLO, dim = 1) <- "GLO"
-  APMagpie <- mbind(APMagpie, GLO)
+    # The structure of the air pollutant data from MAgPIE depend on whether it is
+    # a standalone run (source: mcommons) or a coupled run (source: coupling script)
+    cm_MAgPIE_Nash <- readGDX(gdx, "cm_MAgPIE_Nash") |> as.vector()
 
-  # Add other region aggregations
-  if (!is.null(regionSubsetList)) {
-    APMagpie <- mbind(APMagpie, calc_regionSubset_sums(APMagpie, regionSubsetList))
-  }
-
-  # Add aggregates
-  airpollutants <- c("BC", "CO", "NH3", "NOx", "OC", "SO2", "VOC")
-
-  # "AFOLU|+|Agriculture" only exists for NH3 and NOx, but it is needed for the summation to "AFOLU". Thus, we add it as zero for all other species
-  airpollutants_wo_NH3_NOx <- setdiff(airpollutants, c("NH3", "NOx"))
-  zeroAgriculture <- new.magpie(cells_and_regions = getItems(APMagpie, dim = 1),
-             years = getItems(APMagpie, dim = 2),
-             names = paste0("Emi|", airpollutants_wo_NH3_NOx, "|AFOLU|+|Agriculture (Mt ", airpollutants_wo_NH3_NOx, "/yr)"),
-             fill = 0)
-
-  APMagpie <- mbind(APMagpie, zeroAgriculture)
-
-  for (pollutant in airpollutants) {
-    APMagpie <- mbind(
-      APMagpie,
-      setNames(
-        dimSums(APMagpie[, , c(
-          #paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|AFOLU|Land|+|Fires (Mt ", pollutant, "/yr)")
-        )], dim = 3),
-        paste0("Emi|", pollutant, "|AFOLU|+|Land (Mt ", pollutant, "/yr)")
-      ),
-      setNames(
-        dimSums(APMagpie[, , c(
-          paste0("Emi|", pollutant, "|AFOLU|+|Agriculture (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|AFOLU|+|Agricultural Waste Burning (Mt ", pollutant, "/yr)"),
-          #paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|AFOLU|Land|+|Fires (Mt ", pollutant, "/yr)")
-        )], dim = 3),
-        paste0("Emi|", pollutant, "|AFOLU (Mt ", pollutant, "/yr)")
-      )
-    )
-  }
-
-  output_AP_aggregated <- mbind(output_AP_aggregated, APMagpie[,t,])
-
-  # TEMPORARY SOLUTION TO GET TOTALS FOR reportEmiForClimateAssessment
-  ## AP emissions from shipping and aviation can only be computed in
-  ## reportExtraEmissions based on EDGE-T variables. Thus, they can
-  ## currently not be handed to reportEmiForClimateAssessment which
-  ## needs to run between iterations.
-  ##
-  ## Thus, we compute incomplete aggregate from available top level variabes
-  ## "Energy|Demand|Industry", "Energy|Demand|Buildings",
-  ## "Energy|Demand|Transport|Ground", "Energy|Supply", "Industrial Processes",
-  ## "Product Use|Solvents", "Waste", and "AFOLU" to TOTAL
-  if (addTmpTotal) {
-    tmp_AP_total <- NULL
-    for (pollutant in airpollutants) {
-      tmp_AP_total <- mbind(tmp_AP_total, setNames(
-        dimSums(output_AP_aggregated[, , c(
-          paste0("Emi|", pollutant, "|Energy|Demand|Industry (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|Energy|Demand|Buildings (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|Energy|Demand|Transport|Ground (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|Energy|Supply (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|Industrial Processes (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|Product Use|Solvents (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|Waste (Mt ", pollutant, "/yr)"),
-          paste0("Emi|", pollutant, "|AFOLU (Mt ", pollutant, "/yr)")
-        )], dim = 3),
-        paste0("Emi|", pollutant, " (Mt ", pollutant, "/yr)")
-      ))
+    if (cm_MAgPIE_Nash == 0) {
+      # standalone mode
+      getSets(APMagpie) <- c("region", "year", "ssp", "rcp", "variable")
+      cm_LU_emi_scen <- readGDX(gdx, "cm_LU_emi_scen")
+      cm_rcp_scen <- readGDX(gdx, "cm_rcp_scen")
+      # Subset the chosen scenario and SSP
+      APMagpie <- APMagpie[, , list(ssp = cm_LU_emi_scen, rcp = cm_rcp_scen)]
+      APMagpie <- collapseDim(APMagpie, dim = c("ssp", "rcp"))
+    } else {
+      # in coupled mode expect other dimensions (no ssp and rcp dimension)
+      getSets(APMagpie) <- c("region", "year", "variable")
     }
 
-    output_AP_aggregated <- mbind(output_AP_aggregated, tmp_AP_total)
+    # Add sum across regions as global
+    GLO <- dimSums(APMagpie, dim = 1)
+    getItems(GLO, dim = 1) <- "GLO"
+    APMagpie <- mbind(APMagpie, GLO)
+
+    # Add other region aggregations
+    if (!is.null(regionSubsetList)) {
+      APMagpie <- mbind(APMagpie, calc_regionSubset_sums(APMagpie, regionSubsetList))
+    }
+
+    # "AFOLU|+|Agriculture" only exists for NH3 and NOx, but it is needed for the summation to "AFOLU". Thus, we add it as zero for all other species
+    airpollutants_wo_NH3_NOx <- setdiff(airpollutants, c("NH3", "NOx"))
+    zeroAgriculture <- new.magpie(cells_and_regions = getItems(APMagpie, dim = 1),
+               years = getItems(APMagpie, dim = 2),
+               names = paste0("Emi|", airpollutants_wo_NH3_NOx, "|AFOLU|+|Agriculture (Mt ", airpollutants_wo_NH3_NOx, "/yr)"),
+               fill = 0)
+
+    APMagpie <- mbind(APMagpie, zeroAgriculture)
+
+    for (pollutant in airpollutants) {
+      APMagpie <- mbind(
+        APMagpie,
+        setNames(
+          dimSums(APMagpie[, , c(
+            #paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|AFOLU|Land|+|Fires (Mt ", pollutant, "/yr)")
+          )], dim = 3),
+          paste0("Emi|", pollutant, "|AFOLU|+|Land (Mt ", pollutant, "/yr)")
+        ),
+        setNames(
+          dimSums(APMagpie[, , c(
+            paste0("Emi|", pollutant, "|AFOLU|+|Agriculture (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|AFOLU|+|Agricultural Waste Burning (Mt ", pollutant, "/yr)"),
+            #paste0("Emi|", pollutant, "|AFOLU|Land|+|Peatland (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|AFOLU|Land|+|Fires (Mt ", pollutant, "/yr)")
+          )], dim = 3),
+          paste0("Emi|", pollutant, "|AFOLU (Mt ", pollutant, "/yr)")
+        )
+      )
+    }
+
+    output_AP_aggregated <- mbind(output_AP_aggregated, APMagpie[,t,])
+    }
+
+    # TEMPORARY SOLUTION TO GET TOTALS FOR reportEmiForClimateAssessment
+    ## AP emissions from shipping and aviation can only be computed in
+    ## reportExtraEmissions based on EDGE-T variables. Thus, they can
+    ## currently not be handed to reportEmiForClimateAssessment which
+    ## needs to run between iterations.
+    ##
+    ## Thus, we compute incomplete aggregate from available top level variabes
+    ## "Energy|Demand|Industry", "Energy|Demand|Buildings",
+    ## "Energy|Demand|Transport|Ground", "Energy|Supply", "Industrial Processes",
+    ## "Product Use|Solvents", "Waste", and "AFOLU" to TOTAL
+    if (addTmpTotal) {
+      tmp_AP_total <- NULL
+      for (pollutant in airpollutants) {
+        tmp_AP_total <- mbind(tmp_AP_total, setNames(
+          dimSums(output_AP_aggregated[, , c(
+            paste0("Emi|", pollutant, "|Energy|Demand|Industry (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|Energy|Demand|Buildings (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|Energy|Demand|Transport|Ground (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|Energy|Supply (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|Industrial Processes (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|Product Use|Solvents (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|Waste (Mt ", pollutant, "/yr)"),
+            paste0("Emi|", pollutant, "|AFOLU (Mt ", pollutant, "/yr)")
+          )], dim = 3),
+          paste0("Emi|", pollutant, " (Mt ", pollutant, "/yr)")
+        ))
+      }
+
+      output_AP_aggregated <- mbind(output_AP_aggregated, tmp_AP_total)
   }
 
   return(output_AP_aggregated)
